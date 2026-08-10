@@ -192,19 +192,41 @@ export default function Home() {
             </h2>
           </Reveal>
           <Reveal delay={120}>
-            <div className="mt-12 flex flex-wrap gap-3">
-              <Link
-                href="/paper"
-                className="border border-foreground px-6 py-3 text-[13px] tracking-wide transition-colors hover:bg-foreground hover:text-background"
-              >
-                Read the paper
-              </Link>
-              <Link
-                href="/faq"
-                className="border border-line px-6 py-3 text-[13px] tracking-wide text-muted transition-colors hover:border-muted hover:text-foreground"
-              >
-                What it does not hide
-              </Link>
+            <div className="mt-14 grid gap-px border-t border-line bg-line sm:grid-cols-3">
+              {[
+                {
+                  href: "/explorer",
+                  label: "Follow a packet",
+                  note: "Three hops, one delay at a time",
+                },
+                {
+                  href: "/docs",
+                  label: "Run the mixnet",
+                  note: "Three nodes on your own machine",
+                },
+                {
+                  href: "/faq",
+                  label: "What it does not hide",
+                  note: "The limits, stated plainly",
+                },
+              ].map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="group flex flex-col justify-between gap-8 bg-background p-8 transition-colors hover:bg-foreground/[0.03]"
+                >
+                  <span className="text-[17px]">{item.label}</span>
+                  <span className="flex items-baseline justify-between text-[13px] text-muted">
+                    {item.note}
+                    <span
+                      aria-hidden="true"
+                      className="text-accent transition-transform group-hover:translate-x-1"
+                    >
+                      →
+                    </span>
+                  </span>
+                </Link>
+              ))}
             </div>
           </Reveal>
         </div>

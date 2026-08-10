@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 import { Mark } from "@/components/mark";
 
 const links = [
-  { href: "/#what", label: "What it does" },
   { href: "/docs", label: "Docs" },
   { href: "/network", label: "Network" },
+  { href: "/explorer", label: "Explorer" },
   { href: "/faq", label: "FAQ" },
   { href: "/paper", label: "Paper" },
 ];

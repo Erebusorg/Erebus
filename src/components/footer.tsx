@@ -3,19 +3,32 @@ import { Mark } from "@/components/mark";
 
 const columns = [
   {
-    heading: "Project",
+    heading: "Protocol",
     links: [
       { href: "/paper", label: "Paper" },
-      { href: "/docs", label: "Docs" },
       { href: "/network", label: "Network" },
+      { href: "/explorer", label: "Explorer" },
       { href: "/faq", label: "FAQ" },
+    ],
+  },
+  {
+    heading: "Developers",
+    links: [
+      { href: "/docs", label: "Docs" },
+      { href: "https://github.com/Erebusorg/erebus", label: "Source code" },
+      {
+        href: "https://github.com/Erebusorg/erebus/tree/main/mixnet",
+        label: "Run a node",
+      },
+      { href: "/brand", label: "Brand kit" },
     ],
   },
   {
     heading: "Elsewhere",
     links: [
-      { href: "https://github.com/Erebusorg/erebus", label: "GitHub" },
+      { href: "https://github.com/Erebusorg", label: "GitHub" },
       { href: "https://docs.robinhood.com/chain/", label: "Robinhood Chain" },
+      { href: "/privacy", label: "Privacy" },
     ],
   },
 ];
@@ -37,7 +50,7 @@ export function Footer() {
           </p>
         </div>
 
-        <div className="flex gap-16">
+        <div className="flex flex-wrap gap-12 sm:gap-16">
           {columns.map((column) => (
             <div key={column.heading}>
               <p className="font-mono text-[11px] tracking-[0.18em] uppercase text-muted">
@@ -69,6 +82,13 @@ export function Footer() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="mx-auto flex max-w-6xl flex-col gap-2 border-t border-line px-6 py-6 text-[12px] text-muted sm:flex-row sm:justify-between">
+        <p>Unaudited alpha. No token, no sale, no mainnet.</p>
+        <p>
+          Robinhood Chain is a trademark of its owner; Erebus is unaffiliated.
+        </p>
       </div>
     </footer>
   );
