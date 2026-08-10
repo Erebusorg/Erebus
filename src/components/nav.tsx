@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Mark } from "@/components/mark";
 
 const links = [
   { href: "/#what", label: "What it does" },
-  { href: "/#mixing", label: "Mixing" },
-  { href: "/#use-cases", label: "Use cases" },
-  { href: "/#topology", label: "Network" },
+  { href: "/docs", label: "Docs" },
+  { href: "/network", label: "Network" },
+  { href: "/faq", label: "FAQ" },
   { href: "/paper", label: "Paper" },
 ];
 
@@ -32,7 +33,7 @@ export function Nav() {
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="group flex items-center gap-2.5">
-          <Mark />
+          <Mark className="text-foreground" />
           <span className="text-sm font-medium tracking-[0.2em] uppercase">
             Erebus
           </span>
@@ -85,26 +86,5 @@ export function Nav() {
         </nav>
       )}
     </header>
-  );
-}
-
-function Mark() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 256 256"
-      aria-hidden="true"
-      className="text-foreground"
-    >
-      <defs>
-        <clipPath id="nav-mark-bands">
-          <rect x="24" y="24" width="208" height="92" />
-          <rect x="24" y="128" width="208" height="34" />
-          <rect x="24" y="174" width="208" height="58" />
-        </clipPath>
-      </defs>
-      <path fill="currentColor" clipPath="url(#nav-mark-bands)" d="M118.11 40.56A88 88 0 1 0 215.44 137.89A74 74 0 0 1 118.11 40.56Z" />
-    </svg>
   );
 }

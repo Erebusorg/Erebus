@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Mark } from "@/components/mark";
 import { MixnetBackdrop } from "@/components/mixnet-backdrop";
 import { Reveal } from "@/components/reveal";
 import { Topology } from "@/components/topology";
@@ -32,9 +33,12 @@ export default function Home() {
         <MixnetBackdrop />
         <div className="relative mx-auto max-w-6xl px-6 pt-28 pb-32 sm:pt-40 sm:pb-44">
           <Reveal>
-            <p className="font-mono text-[11px] tracking-[0.24em] uppercase text-accent">
-              Alpha · Robinhood Chain testnet
-            </p>
+            <div className="flex items-center gap-3">
+              <Mark size={30} className="text-accent" />
+              <p className="font-mono text-[11px] tracking-[0.24em] uppercase text-accent">
+                Alpha · Robinhood Chain testnet
+              </p>
+            </div>
           </Reveal>
           <Reveal delay={80}>
             <h1 className="mt-8 text-6xl leading-[0.95] font-medium tracking-[-0.03em] sm:text-8xl">
@@ -57,10 +61,10 @@ export default function Home() {
                 Read the paper
               </Link>
               <Link
-                href="/#topology"
+                href="/docs"
                 className="border border-line px-6 py-3 text-[13px] tracking-wide text-muted transition-colors hover:border-muted hover:text-foreground"
               >
-                See the network
+                Run it locally
               </Link>
             </div>
           </Reveal>
@@ -98,8 +102,8 @@ export default function Home() {
           <Reveal delay={90}>
             <div>
               <p className="text-[15px] leading-relaxed text-muted">
-                Each packet enters a delay queue at every hop and leaves after an
-                independent exponential wait. Output order carries no
+                Each packet enters a delay queue at every hop and leaves after
+                an independent exponential wait. Output order carries no
                 information about input order, so an adversary watching every
                 link still cannot pair what went in with what came out. Real
                 traffic, loop probes, and drop cover are indistinguishable on
@@ -144,6 +148,17 @@ export default function Home() {
             topology with no coordination and no directory server to trust.
           </p>
         </Reveal>
+        <Reveal delay={120}>
+          <p className="mt-4 text-[15px]">
+            <Link href="/network" className="text-accent">
+              Network status
+            </Link>
+            <span className="text-muted">
+              {" "}
+              — no public fleet is running yet, and why.
+            </span>
+          </p>
+        </Reveal>
         <Reveal delay={160}>
           <div className="mt-14 border border-line p-6 sm:p-10">
             <Topology />
@@ -184,14 +199,12 @@ export default function Home() {
               >
                 Read the paper
               </Link>
-              <a
-                href="https://docs.robinhood.com/chain/connecting/"
-                target="_blank"
-                rel="noreferrer"
+              <Link
+                href="/faq"
                 className="border border-line px-6 py-3 text-[13px] tracking-wide text-muted transition-colors hover:border-muted hover:text-foreground"
               >
-                Run a node
-              </a>
+                What it does not hide
+              </Link>
             </div>
           </Reveal>
         </div>
