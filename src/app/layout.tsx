@@ -15,6 +15,10 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  // Needed to turn opengraph-image.png into the absolute URL crawlers require.
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  ),
   title: "Erebus — network-layer privacy for tokenized finance",
   description:
     "Erebus hides who you are, what you trade, and how you pay. A Sphinx mixnet, shielded fee payments, and private reads for tokenized equities on Robinhood Chain.",
