@@ -100,8 +100,8 @@ replay tag. The numbers from this machine are on the
 ## Not built yet
 
 The registry is a file, not a contract; stake is a field nobody enforces; there
-is no slashing, no key rotation, and no node-originated cover traffic. The exit
-delivers to a plain TCP service rather than to Robinhood Chain JSON-RPC, fees
-are not shielded, and there is no browser SDK, so nothing here is usable from a
-wallet yet. The [paper](/paper) states which of these are engineering work and
-which are open problems.
+is no slashing, no key rotation, and no node-originated cover traffic. Fees are
+not shielded, and no public network is running. A browser can already use all of
+this — see the [SDK](/sdk) — but only against a devnet you start yourself. The
+[paper](/paper) states which of these are engineering work and which are open
+problems.

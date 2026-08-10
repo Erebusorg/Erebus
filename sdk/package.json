@@ -1,0 +1,29 @@
+{
+  "name": "@erebus/sdk",
+  "version": "0.1.0",
+  "description": "Send Ethereum JSON-RPC through the Erebus mixnet from a browser.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "pkg"
+  ],
+  "scripts": {
+    "build:wasm": "wasm-pack build ../mixnet/crates/sdk --target web --release --out-dir ../../../sdk/pkg --out-name erebus_sdk",
+    "build": "npm run build:wasm && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test test/*.test.js"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "ws": "^8.18.0"
+  }
+}

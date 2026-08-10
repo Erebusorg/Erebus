@@ -406,7 +406,7 @@ backdoor and no protocol-level decryption quorum.
 | 0 | Specification, threat model, reference packet format | This document |
 | 1 | Sphinx implementation, 3-node local network, CLI client | Implemented in `mixnet/` |
 | 2 | Registry contract, staking, public testnet fleet, live map | Planned |
-| 3 | WASM SDK, EIP-1193 provider, mixnet-routed reads | Planned |
+| 3 | WASM SDK, EIP-1193 provider, mixnet-routed reads | Implemented in `sdk/`, against a local devnet |
 | 4 | Shielded pool, fee circuit, audited verifier | Planned |
 | 5 | PIR component for tree-shaped datasets | Research |
 | 6 | Incentivized testnet, external audit, mainnet | Planned |

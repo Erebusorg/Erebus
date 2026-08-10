@@ -1,0 +1,12 @@
+[package]
+name = "erebus-envelope"
+description = "What a client puts inside an Erebus packet: requests, replies, and probes."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+erebus-sphinx.workspace = true
+
+anyhow.workspace = true

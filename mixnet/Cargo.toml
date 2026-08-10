@@ -1,6 +1,15 @@
 [workspace]
 resolver = "2"
-members = ["crates/sphinx", "crates/topology", "crates/wire", "crates/node", "crates/client"]
+members = [
+    "crates/sphinx",
+    "crates/topology",
+    "crates/envelope",
+    "crates/wire",
+    "crates/node",
+    "crates/client",
+    "crates/sdk",
+    "crates/gateway",
+]
 
 [workspace.package]
 version = "0.1.0"
@@ -9,6 +18,7 @@ license = "Apache-2.0"
 repository = "https://github.com/AlexKarys/erebus"
 
 [workspace.dependencies]
+erebus-envelope = { path = "crates/envelope" }
 erebus-sphinx = { path = "crates/sphinx" }
 erebus-topology = { path = "crates/topology" }
 erebus-wire = { path = "crates/wire" }
