@@ -169,7 +169,17 @@ impl Gateway {
         let mut registered: Vec<[u8; 32]> = Vec::new();
 
         while let Some(message) = stream.next().await {
-            let Message::Binary(message) = message? else {
+            // A dropped tab arrives as a read error rather than a close frame, so
+            // it has to leave the loop by the same door as a clean close: past the
+            // cleanup below, or the registrations and the writer task outlive it.
+            let message = match message {
+                Ok(message) => message,
+                Err(err) => {
+                    debug!(%err, "a client's socket ended without a close frame");
+                    break;
+                }
+            };
+            let Message::Binary(message) = message else {
                 continue;
             };
             match message.first() {
@@ -256,6 +266,43 @@ mod tests {
     #[test]
     fn a_delivery_nobody_is_waiting_for_is_dropped() {
         assert!(gateway().deliver(&reply([9u8; 32])).is_err());
+    }
+
+    #[tokio::test]
+    async fn a_socket_that_dies_without_a_close_frame_leaves_nothing_behind() {
+        let gateway = Arc::new(gateway());
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+
+        let serving = {
+            let gateway = Arc::clone(&gateway);
+            tokio::spawn(async move {
+                let (stream, _) = listener.accept().await.unwrap();
+                gateway.serve_socket(stream).await
+            })
+        };
+
+        let stream = tokio::net::TcpStream::connect(address).await.unwrap();
+        let (mut socket, _) = tokio_tungstenite::client_async("ws://gateway/", stream)
+            .await
+            .unwrap();
+        socket.next().await.unwrap().unwrap(); // the greeting
+        socket
+            .send(Message::Binary(
+                erebus_sdk::gateway::encode_expect(&[7u8; 32]).unwrap(),
+            ))
+            .await
+            .unwrap();
+
+        // Wait until the registration lands, then vanish the way a closed tab
+        // does: the connection goes away with no close frame.
+        while gateway.waiting.lock().unwrap().by_id.is_empty() {
+            tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+        }
+        drop(socket);
+
+        serving.await.unwrap().expect("the socket ends cleanly");
+        assert!(gateway.waiting.lock().unwrap().by_id.is_empty());
     }
 
     #[test]
