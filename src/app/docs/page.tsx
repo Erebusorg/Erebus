@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Mark } from "@/components/mark";
 import { Prose } from "@/components/prose";
 import { loadMarkdown } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Erebus — Network-Layer Privacy for Tokenized Finance",
+  title: "Docs — Erebus",
   description:
-    "Specification of the Erebus mixnet: Sphinx packets, continuous Poisson mixing, shielded fee payment, on-chain node registry, threat model, and limitations.",
+    "Run the Erebus mixnet locally: three nodes, a registry, a request through all three hops, and what each hop learns.",
 };
 
-export default async function PaperPage() {
-  const body = await loadMarkdown("whitepaper");
+export default async function DocsPage() {
+  const body = await loadMarkdown("docs");
 
   return (
     <article className="mx-auto max-w-3xl px-6 py-20 sm:py-28">
@@ -18,14 +19,19 @@ export default async function PaperPage() {
         <div className="flex items-center gap-3">
           <Mark size={22} className="text-accent" />
           <p className="font-mono text-[11px] tracking-[0.24em] uppercase text-accent">
-            Draft 0.1
+            Docs · devnet
           </p>
         </div>
         <h1 className="mt-6 text-3xl leading-tight tracking-[-0.02em] sm:text-5xl">
-          Erebus: Network-Layer Privacy for Tokenized Finance
+          Run the mixnet
         </h1>
         <p className="mt-5 text-[15px] text-muted">
-          A Sphinx mixnet with shielded fee payment for Robinhood Chain
+          Three hops on your own machine, in about a minute. For the design
+          behind it, read the{" "}
+          <Link href="/paper" className="text-accent">
+            paper
+          </Link>
+          .
         </p>
       </header>
 

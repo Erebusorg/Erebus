@@ -1,0 +1,27 @@
+[package]
+name = "erebus-client"
+description = "Erebus client: path selection, reply blocks, cover traffic, and a demo sink."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "erebus-client"
+path = "src/main.rs"
+
+[dependencies]
+erebus-sphinx.workspace = true
+erebus-topology.workspace = true
+erebus-wire.workspace = true
+
+anyhow.workspace = true
+clap.workspace = true
+rand.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[dev-dependencies]
+erebus-node = { path = "../node" }
+rand_chacha.workspace = true

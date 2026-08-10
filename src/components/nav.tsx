@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Mark } from "@/components/mark";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const links = [
-  { href: "/#what", label: "What it does" },
-  { href: "/#mixing", label: "Mixing" },
-  { href: "/#use-cases", label: "Use cases" },
-  { href: "/#topology", label: "Network" },
+  { href: "/docs", label: "Docs" },
+  { href: "/network", label: "Network" },
+  { href: "/explorer", label: "Explorer" },
+  { href: "/faq", label: "FAQ" },
   { href: "/paper", label: "Paper" },
 ];
 
@@ -32,7 +34,7 @@ export function Nav() {
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="group flex items-center gap-2.5">
-          <Mark />
+          <Mark className="text-foreground" />
           <span className="text-sm font-medium tracking-[0.2em] uppercase">
             Erebus
           </span>
@@ -57,6 +59,7 @@ export function Nav() {
           >
             Read paper
           </Link>
+          <ThemeToggle />
           <button
             type="button"
             aria-label="Toggle navigation"
@@ -85,14 +88,5 @@ export function Nav() {
         </nav>
       )}
     </header>
-  );
-}
-
-function Mark() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-      <circle cx="10" cy="10" r="8.5" className="stroke-muted" fill="none" />
-      <path d="M10 1.5a8.5 8.5 0 0 0 0 17z" fill="currentColor" />
-    </svg>
   );
 }

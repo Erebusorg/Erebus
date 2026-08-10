@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" fill="none">
+  <title>Erebus — network-layer privacy for tokenized finance</title>
+  <defs>
+    <clipPath id="erebus-bands">
+      <rect x="24" y="24" width="208" height="92" />
+      <rect x="24" y="128" width="208" height="34" />
+      <rect x="24" y="174" width="208" height="58" />
+    </clipPath>
+  </defs>
+  <rect width="1280" height="640" fill="#050506" />
+  <line x1="736.0" y1="156.8" x2="950.4" y2="156.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="156.8" x2="950.4" y2="252.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="156.8" x2="950.4" y2="348.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="156.8" x2="950.4" y2="444.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="156.8" x2="950.4" y2="540.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="252.8" x2="950.4" y2="156.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="252.8" x2="950.4" y2="252.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="252.8" x2="950.4" y2="348.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="252.8" x2="950.4" y2="444.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="252.8" x2="950.4" y2="540.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="348.8" x2="950.4" y2="156.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="348.8" x2="950.4" y2="252.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="348.8" x2="950.4" y2="348.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="348.8" x2="950.4" y2="444.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="348.8" x2="950.4" y2="540.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="444.8" x2="950.4" y2="156.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="444.8" x2="950.4" y2="252.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="444.8" x2="950.4" y2="348.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="444.8" x2="950.4" y2="444.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="444.8" x2="950.4" y2="540.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="540.8" x2="950.4" y2="156.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="540.8" x2="950.4" y2="252.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="540.8" x2="950.4" y2="348.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="540.8" x2="950.4" y2="444.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="736.0" y1="540.8" x2="950.4" y2="540.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="156.8" x2="1164.8" y2="156.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="156.8" x2="1164.8" y2="252.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="156.8" x2="1164.8" y2="348.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="156.8" x2="1164.8" y2="444.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="156.8" x2="1164.8" y2="540.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="252.8" x2="1164.8" y2="156.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="252.8" x2="1164.8" y2="252.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="252.8" x2="1164.8" y2="348.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="252.8" x2="1164.8" y2="444.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="252.8" x2="1164.8" y2="540.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="348.8" x2="1164.8" y2="156.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="348.8" x2="1164.8" y2="252.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="348.8" x2="1164.8" y2="348.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="348.8" x2="1164.8" y2="444.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="348.8" x2="1164.8" y2="540.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="444.8" x2="1164.8" y2="156.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="444.8" x2="1164.8" y2="252.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="444.8" x2="1164.8" y2="348.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="444.8" x2="1164.8" y2="444.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="444.8" x2="1164.8" y2="540.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="540.8" x2="1164.8" y2="156.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="540.8" x2="1164.8" y2="252.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="540.8" x2="1164.8" y2="348.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="540.8" x2="1164.8" y2="444.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <line x1="950.4" y1="540.8" x2="1164.8" y2="540.8" stroke="#f5f3f0" stroke-opacity="0.09" stroke-width="1" />
+  <circle cx="736.0" cy="156.8" r="4" fill="#f5f3f0" fill-opacity="0.35" />
+  <circle cx="736.0" cy="252.8" r="4" fill="#f5f3f0" fill-opacity="0.35" />
+  <circle cx="736.0" cy="348.8" r="4" fill="#f5f3f0" fill-opacity="0.35" />
+  <circle cx="736.0" cy="444.8" r="4" fill="#f5f3f0" fill-opacity="0.35" />
+  <circle cx="736.0" cy="540.8" r="4" fill="#f5f3f0" fill-opacity="0.35" />
+  <circle cx="950.4" cy="156.8" r="4" fill="#f5f3f0" fill-opacity="0.55" />
+  <circle cx="950.4" cy="252.8" r="4" fill="#f5f3f0" fill-opacity="0.55" />
+  <circle cx="950.4" cy="348.8" r="4" fill="#f5f3f0" fill-opacity="0.55" />
+  <circle cx="950.4" cy="444.8" r="4" fill="#f5f3f0" fill-opacity="0.55" />
+  <circle cx="950.4" cy="540.8" r="4" fill="#f5f3f0" fill-opacity="0.55" />
+  <circle cx="1164.8" cy="156.8" r="4" fill="#f5f3f0" fill-opacity="0.35" />
+  <circle cx="1164.8" cy="252.8" r="4" fill="#f5f3f0" fill-opacity="0.35" />
+  <circle cx="1164.8" cy="348.8" r="4" fill="#f5f3f0" fill-opacity="0.35" />
+  <circle cx="1164.8" cy="444.8" r="4" fill="#f5f3f0" fill-opacity="0.35" />
+  <circle cx="1164.8" cy="540.8" r="4" fill="#f5f3f0" fill-opacity="0.35" />
+  <text x="736.0" y="123" fill="#f5f3f0" fill-opacity="0.35" font-family="JetBrains Mono, monospace" font-size="15" letter-spacing="3" text-anchor="middle">ENTRY</text>
+  <text x="950.4" y="123" fill="#f5f3f0" fill-opacity="0.35" font-family="JetBrains Mono, monospace" font-size="15" letter-spacing="3" text-anchor="middle">RELAY</text>
+  <text x="1164.8" y="123" fill="#f5f3f0" fill-opacity="0.35" font-family="JetBrains Mono, monospace" font-size="15" letter-spacing="3" text-anchor="middle">EXIT</text>
+  <g transform="translate(92 112) scale(0.4625)">
+    <path fill="#b8452b" clip-path="url(#erebus-bands)" d="M118.11 40.56A88 88 0 1 0 215.44 137.89A74 74 0 0 1 118.11 40.56Z" />
+  </g>
+  <text x="90" y="355" fill="#f5f3f0"
+    font-family="Inter, system-ui, sans-serif" font-size="74"
+    font-weight="500" letter-spacing="12">EREBUS</text>
+  <text x="96" y="438" fill="#8a8783"
+    font-family="Inter, system-ui, sans-serif" font-size="27"
+    font-weight="300">Privacy at the network layer for tokenized finance.</text>
+  <text x="96" y="566" fill="#b8452b"
+    font-family="JetBrains Mono, monospace" font-size="18"
+    letter-spacing="2">SPHINX MIXNET · SHIELDED FEES · ROBINHOOD CHAIN</text>
+</svg>

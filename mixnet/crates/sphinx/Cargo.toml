@@ -1,0 +1,16 @@
+[package]
+name = "erebus-sphinx"
+description = "Sphinx packet format for the Erebus mixnet: fixed-size, per-hop unlinkable, replay-detectable."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+chacha20.workspace = true
+chacha20poly1305.workspace = true
+hmac.workspace = true
+rand.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+x25519-dalek.workspace = true

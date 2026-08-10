@@ -6,6 +6,19 @@
   --muted: #8a8783;
   --line: #1c1c1f;
   --accent: #b8452b;
+  --grain: 0.035;
+  color-scheme: dark;
+}
+
+/* Set before paint by the inline script in layout.tsx, so there is no flash. */
+[data-theme="light"] {
+  --background: #f3f1ec;
+  --foreground: #16161a;
+  --muted: #6e6a63;
+  --line: #dcd8cf;
+  --accent: #a83c22;
+  --grain: 0.02;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -20,6 +33,13 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+html,
+body {
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
 }
 
 body {
@@ -40,7 +60,7 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 50;
-  opacity: 0.035;
+  opacity: var(--grain);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -65,6 +85,11 @@ body {
   .reveal {
     opacity: 1;
     transform: none;
+    transition: none;
+  }
+
+  html,
+  body {
     transition: none;
   }
 }
