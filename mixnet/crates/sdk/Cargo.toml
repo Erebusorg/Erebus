@@ -1,0 +1,30 @@
+[package]
+name = "erebus-sdk"
+description = "Erebus client core for the browser: builds Sphinx packets and reply blocks in WebAssembly."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+erebus-envelope.workspace = true
+erebus-sphinx.workspace = true
+erebus-topology.workspace = true
+
+rand.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+wasm-bindgen = "0.2.100"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.2.15", features = ["js"] }
+
+[dev-dependencies]
+erebus-client = { path = "../client" }
+erebus-node = { path = "../node" }
+erebus-wire.workspace = true
+tokio.workspace = true

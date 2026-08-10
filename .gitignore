@@ -42,3 +42,8 @@ next-env.d.ts
 
 # rust
 /mixnet/target
+
+# sdk build output
+/sdk/node_modules
+/sdk/dist
+/sdk/pkg

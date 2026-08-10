@@ -6,8 +6,12 @@
 //! and the return path.
 
 pub mod cover;
-pub mod envelope;
+pub mod rpc;
 pub mod sink;
+
+/// The frames a client puts inside a packet. Kept in its own crate so the
+/// browser SDK can parse the same bytes.
+pub use erebus_envelope as envelope;
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -22,7 +26,7 @@ use tokio::sync::oneshot;
 use tokio::time::{timeout, Duration};
 use tracing::{debug, warn};
 
-use envelope::{Frame, Reply, Request};
+use erebus_envelope::{Frame, Reply, Request};
 
 pub struct ClientConfig {
     pub registry: Registry,

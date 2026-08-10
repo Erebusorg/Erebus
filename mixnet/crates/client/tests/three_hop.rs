@@ -5,7 +5,7 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use erebus_client::sink::Sink;
+use erebus_client::sink::{immediate, Sink};
 use erebus_client::{Client, ClientConfig};
 use erebus_node::{MixNode, NodeConfig};
 use erebus_sphinx::{Packet, PrivateKey};
@@ -54,7 +54,7 @@ async fn start_network(nodes: usize) -> Network {
 
     let sink = Sink::new(
         registry.clone(),
-        Arc::new(|body: &[u8]| {
+        immediate(|body: &[u8]| {
             Some(format!("filled: {}", String::from_utf8_lossy(body)).into_bytes())
         }),
     );

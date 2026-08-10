@@ -5,6 +5,8 @@
 //! reply block, never a client address, and answers by handing a packet back to
 //! the entry node named in the reply block.
 
+use std::future::Future;
+use std::pin::Pin;
 use std::sync::Arc;
 
 use anyhow::{anyhow, Result};
@@ -13,10 +15,22 @@ use erebus_wire as wire;
 use tokio::net::TcpListener;
 use tracing::{debug, warn};
 
-use crate::envelope::{Frame, Reply};
+use erebus_envelope::{Frame, Reply};
 
-/// Answers a request body. `None` means nothing to send back.
-pub type Handler = Arc<dyn Fn(&[u8]) -> Option<Vec<u8>> + Send + Sync>;
+/// An answer in progress. `None` means nothing to send back.
+pub type Answer = Pin<Box<dyn Future<Output = Option<Vec<u8>>> + Send>>;
+
+/// Answers a request body. Asynchronous because a real destination service
+/// forwards the body somewhere else and waits.
+pub type Handler = Arc<dyn Fn(Vec<u8>) -> Answer + Send + Sync>;
+
+/// Wraps an answer that needs no waiting.
+pub fn immediate(f: impl Fn(&[u8]) -> Option<Vec<u8>> + Send + Sync + 'static) -> Handler {
+    Arc::new(move |body| {
+        let answer = f(&body);
+        Box::pin(async move { answer })
+    })
+}
 
 pub struct Sink {
     registry: Registry,
@@ -63,7 +77,7 @@ impl Sink {
             return Ok(());
         }
 
-        let Some(answer) = (self.handler)(&request.body) else {
+        let Some(answer) = (self.handler)(request.body).await else {
             return Ok(());
         };
         let Some(surb) = request.surb else {

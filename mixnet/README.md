@@ -4,9 +4,10 @@ The transport layer described in [`content/whitepaper.md`](../content/whitepaper
 implemented: Sphinx packets, three mix layers, per-hop exponential delays, reply
 blocks, cover traffic, and replay rejection.
 
-Nothing here touches a chain yet. A packet's exit hands the payload to a
-destination service over TCP; swapping that service for one that speaks JSON-RPC
-to Robinhood Chain is the next phase, not this one.
+A packet's exit hands the payload to a destination service over TCP. One such
+service speaks Ethereum JSON-RPC: it forwards a fixed list of methods to an
+upstream endpoint and refuses everything else, so a page can read the chain and
+submit a signed transaction without the endpoint learning who asked.
 
 ## Crates
 
@@ -16,7 +17,10 @@ to Robinhood Chain is the next phase, not this one.
 | `erebus-topology` | Registry, deterministic layer assignment, path selection, exponential delays. |
 | `erebus-wire` | Link framing: bare constant-size frames between mix nodes, length-prefixed delivery out of the network. |
 | `erebus-node` | The mix node: peel, hold, forward. |
-| `erebus-client` | Path selection, reply blocks, loop probes, cover traffic, and a demo destination service. |
+| `erebus-client` | Path selection, reply blocks, loop probes, cover traffic, an echoing destination service, and the JSON-RPC exit. |
+| `erebus-envelope` | What a client puts inside a packet: requests, replies, probes. |
+| `erebus-sdk` | The client core with no sockets and no filesystem, so it compiles to WebAssembly. |
+| `erebus-gateway` | Carries packets between a browser and the mixnet, without being able to read them. |
 
 ## Run a local network
 
@@ -37,6 +41,21 @@ cargo run --bin erebus-node -- run --key node0.key --listen 127.0.0.1:9000 --reg
 cargo run --bin erebus-client -- sink --registry registry.json --listen 127.0.0.1:9100
 cargo run --bin erebus-client -- send --registry registry.json --to 127.0.0.1:9100 --message "hello"
 ```
+
+## A devnet a browser can talk to
+
+```bash
+UPSTREAM=http://127.0.0.1:8545 ./scripts/local-devnet.sh
+```
+
+Three nodes, a JSON-RPC exit pointed at `UPSTREAM`, and a gateway on
+`ws://127.0.0.1:8080`, left running. The browser side is in [`../sdk`](../sdk).
+
+The gateway exists because a page cannot open a raw socket and cannot be dialled.
+It learns that a client is speaking to the mixnet and which entry node the client
+chose — what the client's own network link sees anyway — and nothing more: it
+routes replies by the reply-block id a client registers, and drops frames nobody
+is waiting for.
 
 A registry is a JSON file. On chain it becomes a contract; the client code does
 not change, because layer assignment and path selection already derive from
@@ -81,6 +100,9 @@ cargo fmt --all --check
 - **No stake, no slashing.** `stake` is carried and ignored.
 - **Cover traffic is client-side only.** Nodes do not yet originate loops of
   their own, so a network with few clients has little cover.
+- **The gateway is a chokepoint.** Every browser using one gateway is visible to
+  that gateway as a set of connections, so a gateway with few users is a weak
+  anonymity set even though it cannot read a packet. Run your own.
 - **Delays are honoured, not proven.** Loop probes detect a node that drops
   packets. They do not yet detect one that forwards immediately instead of
   waiting.

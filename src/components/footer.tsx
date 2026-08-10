@@ -16,6 +16,7 @@ const columns = [
     heading: "Developers",
     links: [
       { href: "/docs", label: "Docs" },
+      { href: "/sdk", label: "SDK" },
       { href: "https://github.com/Erebusorg/erebus", label: "Source code" },
       {
         href: "https://github.com/Erebusorg/erebus/tree/main/mixnet",

@@ -4,6 +4,10 @@
 //! service parses. It carries the request body and, optionally, the reply block
 //! the service must use to answer — the service never learns an address to
 //! answer to.
+//!
+//! It is its own crate because both ends parse it and one of those ends is a
+//! browser: nothing here touches the network or the filesystem, so it compiles
+//! to WebAssembly along with the packet format.
 
 use anyhow::{bail, Result};
 use erebus_sphinx::Surb;
@@ -130,6 +134,18 @@ pub enum Frame {
     /// A packet a client sent to itself, to check the path it was routed over
     /// still carries traffic and still applies the delays it was handed.
     Probe { id: [u8; 32] },
+}
+
+impl Frame {
+    /// The reply block or probe id a delivered frame belongs to, for a party
+    /// that routes frames to waiting clients without being able to read them.
+    pub fn routing_id(&self) -> Option<[u8; 32]> {
+        match self {
+            Frame::Reply(reply) => Some(reply.surb_id),
+            Frame::Probe { id } => Some(*id),
+            Frame::Request(_) => None,
+        }
+    }
 }
 
 impl Frame {

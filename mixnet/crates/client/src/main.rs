@@ -1,9 +1,9 @@
 use std::path::PathBuf;
-use std::sync::Arc;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use erebus_client::sink::Sink;
+use erebus_client::rpc::RpcService;
+use erebus_client::sink::{immediate, Sink};
 use erebus_client::{Client, ClientConfig};
 use erebus_topology::Registry;
 use tokio::time::Duration;
@@ -55,6 +55,16 @@ enum Command {
         registry: PathBuf,
         #[arg(long, default_value = "127.0.0.1:9100")]
         listen: String,
+    },
+    /// Runs a destination service that forwards JSON-RPC to a chain node.
+    Rpc {
+        #[arg(long)]
+        registry: PathBuf,
+        #[arg(long, default_value = "127.0.0.1:9100")]
+        listen: String,
+        /// The chain node this exit forwards to, as a URL.
+        #[arg(long)]
+        upstream: String,
     },
 }
 
@@ -108,12 +118,25 @@ async fn main() -> Result<()> {
         Command::Sink { registry, listen } => {
             let sink = Sink::new(
                 Registry::load(&registry)?,
-                Arc::new(|body: &[u8]| {
+                immediate(|body: &[u8]| {
                     Some(format!("echo: {}", String::from_utf8_lossy(body)).into_bytes())
                 }),
             );
             let (address, serve) = sink.bind(&listen).await?;
             info!(%address, "destination service listening");
+            serve.await;
+        }
+        Command::Rpc {
+            registry,
+            listen,
+            upstream,
+        } => {
+            let sink = Sink::new(
+                Registry::load(&registry)?,
+                RpcService::with_default_methods(upstream.clone()).handler(),
+            );
+            let (address, serve) = sink.bind(&listen).await?;
+            info!(%address, %upstream, "json-rpc exit listening");
             serve.await;
         }
     }

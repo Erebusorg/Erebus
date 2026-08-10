@@ -1,31 +1,33 @@
 [package]
-name = "erebus-client"
-description = "Erebus client: path selection, reply blocks, cover traffic, and a demo sink."
+name = "erebus-gateway"
+description = "Erebus gateway: carries packets between a browser and the mixnet without being able to read them."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 
 [[bin]]
-name = "erebus-client"
+name = "erebus-gateway"
 path = "src/main.rs"
 
 [dependencies]
 erebus-envelope.workspace = true
+erebus-sdk = { path = "../sdk" }
 erebus-sphinx.workspace = true
 erebus-topology.workspace = true
 erebus-wire.workspace = true
 
 anyhow.workspace = true
 clap.workspace = true
-rand.workspace = true
-reqwest = { version = "0.12.12", default-features = false, features = ["rustls-tls"] }
-serde.workspace = true
+futures-util = { version = "0.3.31", default-features = false, features = ["sink"] }
 serde_json.workspace = true
 tokio.workspace = true
+tokio-tungstenite = "0.24.0"
 tracing.workspace = true
 tracing-subscriber.workspace = true
 
 [dev-dependencies]
+erebus-client = { path = "../client" }
 erebus-node = { path = "../node" }
-rand_chacha.workspace = true
+rand.workspace = true
+tokio-tungstenite = "0.24.0"

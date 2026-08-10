@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Erebus SDK — browser example</title>
+    <style>
+      :root {
+        --background: #050506;
+        --foreground: #e8e6e3;
+        --muted: #8a8783;
+        --line: #1c1c1f;
+        --accent: #b8452b;
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        padding: 3rem 1.5rem;
+        background: var(--background);
+        color: var(--foreground);
+        font: 14px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      main {
+        max-width: 46rem;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 1.1rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      p {
+        color: var(--muted);
+      }
+      label {
+        display: block;
+        margin: 1rem 0 0.35rem;
+        color: var(--muted);
+        font-size: 0.75rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      input,
+      button,
+      pre {
+        width: 100%;
+        box-sizing: border-box;
+        background: transparent;
+        color: inherit;
+        border: 1px solid var(--line);
+        padding: 0.65rem 0.75rem;
+        font: inherit;
+      }
+      button {
+        margin-top: 1.25rem;
+        cursor: pointer;
+        border-color: var(--accent);
+        color: var(--foreground);
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      pre {
+        margin-top: 1.25rem;
+        white-space: pre-wrap;
+        min-height: 8rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Erebus SDK</h1>
+      <p>
+        A page that sends Ethereum JSON-RPC through three mix hops. Start the
+        devnet first (<code>mixnet/scripts/local-devnet.sh</code>), then serve
+        this directory over HTTP — a file:// page cannot load WebAssembly.
+      </p>
+
+      <label for="gateway">Gateway</label>
+      <input id="gateway" value="ws://127.0.0.1:8080" />
+
+      <label for="exit">JSON-RPC exit</label>
+      <input id="exit" value="127.0.0.1:9100" />
+
+      <label for="method">Method</label>
+      <input id="method" value="eth_blockNumber" />
+
+      <button id="send" type="button">Send through the mixnet</button>
+      <pre id="log">idle</pre>
+    </main>
+
+    <script type="module">
+      import { ErebusClient, ErebusProvider } from "../dist/index.js";
+
+      const log = document.getElementById("log");
+      const button = document.getElementById("send");
+      const line = (text) => {
+        log.textContent = `${log.textContent === "idle" ? "" : `${log.textContent}\n`}${text}`;
+      };
+
+      let client;
+      let provider;
+
+      button.addEventListener("click", async () => {
+        button.disabled = true;
+        try {
+          const gateway = document.getElementById("gateway").value;
+          const exit = document.getElementById("exit").value;
+          const method = document.getElementById("method").value;
+
+          if (!client) {
+            client = await ErebusClient.connect({ gateway, meanDelayMs: 50 });
+            provider = new ErebusProvider(client, { destination: exit });
+            line(`connected; replies are delivered to ${client.replyAddress}`);
+            const roundTrip = await client.probe();
+            line(`loop probe returned in ${Math.round(roundTrip)} ms`);
+          }
+
+          const started = performance.now();
+          const result = await provider.request({ method, params: [] });
+          line(
+            `${method} -> ${JSON.stringify(result)} in ${Math.round(performance.now() - started)} ms`,
+          );
+        } catch (error) {
+          line(`error: ${error.message}`);
+        } finally {
+          button.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
