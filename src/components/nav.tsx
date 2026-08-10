@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Mark } from "@/components/mark";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const links = [
   { href: "/docs", label: "Docs" },
@@ -58,6 +59,7 @@ export function Nav() {
           >
             Read paper
           </Link>
+          <ThemeToggle />
           <button
             type="button"
             aria-label="Toggle navigation"

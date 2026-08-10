@@ -160,7 +160,11 @@ export default function NetworkPage() {
         </ol>
         <p className="mt-8 text-[13px] text-muted">
           Until then, treat every number on this page as a protocol constant,
-          not a measurement.
+          not a measurement. The measured ones live in the{" "}
+          <Link href="/benchmarks" className="text-accent">
+            benchmarks
+          </Link>
+          .
         </p>
       </section>
     </div>

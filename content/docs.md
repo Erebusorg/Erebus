@@ -87,6 +87,16 @@ common except the packet size, which is the same for every packet.
 | `erebus-node`     | The mix node: peel, delay, forward, reject replays            |
 | `erebus-client`   | Requests, reply blocks, cover traffic, loop probes, demo sink |
 
+## Measure it
+
+```bash
+cargo run --release -p erebus-sphinx --example bench
+```
+
+Prints the cost of building a packet, of one hop processing it, and of the
+replay tag. The numbers from this machine are on the
+[benchmarks](/benchmarks) page.
+
 ## Not built yet
 
 The registry is a file, not a contract; stake is a field nobody enforces; there

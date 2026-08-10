@@ -7,6 +7,7 @@ const columns = [
     links: [
       { href: "/paper", label: "Paper" },
       { href: "/network", label: "Network" },
+      { href: "/benchmarks", label: "Benchmarks" },
       { href: "/explorer", label: "Explorer" },
       { href: "/faq", label: "FAQ" },
     ],
@@ -29,6 +30,8 @@ const columns = [
       { href: "https://x.com/Erebusorg", label: "X" },
       { href: "https://docs.robinhood.com/chain/", label: "Robinhood Chain" },
       { href: "/privacy", label: "Privacy" },
+      { href: "/terms", label: "Terms" },
+      { href: "/content-policy", label: "Content policy" },
     ],
   },
 ];

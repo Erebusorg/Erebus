@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
+import { themeScript } from "@/components/theme-toggle";
 
 const sans = Inter({
   variable: "--font-sans-custom",
@@ -40,7 +41,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${sans.variable} ${mono.variable} h-full antialiased`}
+      // The inline script sets data-theme before React sees the document.
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="grain min-h-full flex flex-col">
         <Nav />
         <main className="flex-1">{children}</main>
