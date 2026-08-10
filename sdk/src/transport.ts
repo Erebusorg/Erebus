@@ -87,12 +87,30 @@ export class GatewaySocket {
         void (async () => {
           const bytes = await toBytes(event.data);
           if (!bytes) return;
+          // A gateway is not trusted to send something readable: anything that
+          // fails to decode has to become a rejected connection or a dropped
+          // message, never an exception in a callback nobody awaits.
           if (greeted) {
-            const frame = decode_deliver(bytes);
-            if (frame) handlers.onDelivery(frame);
+            try {
+              const frame = decode_deliver(bytes);
+              if (frame) handlers.onDelivery(frame);
+            } catch {
+              // Not a delivery this client can read; the gateway may send
+              // anything, and none of it is authoritative.
+            }
             return;
           }
-          const hello = decode_hello(bytes);
+          let hello;
+          try {
+            hello = decode_hello(bytes);
+          } catch {
+            reject(
+              new Error(
+                `the gateway at ${url} sent a greeting that could not be read`,
+              ),
+            );
+            return;
+          }
           if (!hello) return;
           greeted = true;
           resolve({ tag: hello.tag, registry: hello.registry });

@@ -68,7 +68,8 @@ export class ErebusClient {
       options.gateway,
       {
         onDelivery: (frame) => self?.accept(frame),
-        onClose: () => self?.fail(new Error("the gateway closed the socket")),
+        onClose: () =>
+          self?.disconnect(new Error("the gateway closed the socket")),
       },
       options.socket,
     );
@@ -93,10 +94,19 @@ export class ErebusClient {
   }
 
   /**
+   * False once the socket is gone, whether this client closed it or the gateway
+   * did. Cover traffic sent after that protects nothing, so it stops.
+   */
+  get open(): boolean {
+    return !this.closed;
+  }
+
+  /**
    * Sends `body` to a destination service and waits for the answer to come back
    * over a return path the destination never sees.
    */
   async request(destination: string, body: Uint8Array): Promise<Uint8Array> {
+    this.requireOpen();
     const outgoing = this.mix.request(destination, body);
     const id = outgoing.id;
     if (!id) throw new Error("a request must carry a reply block");
@@ -110,6 +120,7 @@ export class ErebusClient {
 
   /** Sends something nothing can answer, for when nothing has to. */
   send(destination: string, body: Uint8Array): void {
+    this.requireOpen();
     const outgoing = this.mix.send(destination, body);
     this.dispatch(null, outgoing.first_hop, outgoing.packet);
   }
@@ -119,6 +130,7 @@ export class ErebusClient {
    * returns is evidence that a hop on the path stopped forwarding.
    */
   async probe(): Promise<number> {
+    this.requireOpen();
     const outgoing = this.mix.probe();
     const id = outgoing.id;
     if (!id) throw new Error("a probe must carry an id");
@@ -135,6 +147,7 @@ export class ErebusClient {
    * sending something is not itself the signal.
    */
   startCoverTraffic(destination: string, meanIntervalMs = 5_000): void {
+    this.requireOpen();
     this.stopCoverTraffic();
     const tick = () => {
       if (this.closed) return;
@@ -153,10 +166,25 @@ export class ErebusClient {
   }
 
   close(): void {
+    this.disconnect(new Error("the client was closed"));
+    this.socket.close();
+  }
+
+  /**
+   * Tears down everything that depends on the socket. Called for a caller's
+   * `close()` and for a gateway that hangs up, because a page that keeps
+   * building 32 KB packets into a dead socket burns CPU and, worse, believes it
+   * is still covered.
+   */
+  private disconnect(reason: Error): void {
+    if (this.closed) return;
     this.closed = true;
     this.stopCoverTraffic();
-    this.fail(new Error("the client was closed"));
-    this.socket.close();
+    this.fail(reason);
+  }
+
+  private requireOpen(): void {
+    if (this.closed) throw new Error("the gateway connection is closed");
   }
 
   private expect(id: Uint8Array): Promise<Uint8Array | undefined> {
