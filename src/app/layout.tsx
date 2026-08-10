@@ -28,6 +28,11 @@ export const metadata: Metadata = {
       "Network-layer privacy for tokenized finance. Nobody learns your address, your positions, or your timing.",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    site: "@Erebusorg",
+    creator: "@Erebusorg",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
