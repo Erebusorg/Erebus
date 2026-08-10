@@ -1,0 +1,26 @@
+[package]
+name = "erebus-node"
+description = "Erebus mix node: peels one Sphinx layer, holds the packet for its commanded delay, forwards."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "erebus-node"
+path = "src/main.rs"
+
+[dependencies]
+erebus-sphinx.workspace = true
+erebus-topology.workspace = true
+erebus-wire.workspace = true
+
+anyhow.workspace = true
+clap.workspace = true
+rand.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[dev-dependencies]
+rand_chacha.workspace = true

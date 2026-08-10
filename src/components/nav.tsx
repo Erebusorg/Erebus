@@ -90,9 +90,21 @@ export function Nav() {
 
 function Mark() {
   return (
-    <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-      <circle cx="10" cy="10" r="8.5" className="stroke-muted" fill="none" />
-      <path d="M10 1.5a8.5 8.5 0 0 0 0 17z" fill="currentColor" />
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 256 256"
+      aria-hidden="true"
+      className="text-foreground"
+    >
+      <defs>
+        <clipPath id="nav-mark-bands">
+          <rect x="24" y="24" width="208" height="92" />
+          <rect x="24" y="128" width="208" height="34" />
+          <rect x="24" y="174" width="208" height="58" />
+        </clipPath>
+      </defs>
+      <path fill="currentColor" clipPath="url(#nav-mark-bands)" d="M118.11 40.56A88 88 0 1 0 215.44 137.89A74 74 0 0 1 118.11 40.56Z" />
     </svg>
   );
 }

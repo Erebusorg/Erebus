@@ -1,0 +1,13 @@
+[package]
+name = "erebus-wire"
+description = "Link framing for Erebus: constant-size mix frames, length-prefixed delivery."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+erebus-sphinx.workspace = true
+
+anyhow.workspace = true
+tokio.workspace = true

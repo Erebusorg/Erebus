@@ -1,0 +1,122 @@
+use std::path::PathBuf;
+use std::sync::Arc;
+
+use anyhow::Result;
+use clap::{Parser, Subcommand};
+use erebus_client::sink::Sink;
+use erebus_client::{Client, ClientConfig};
+use erebus_topology::Registry;
+use tokio::time::Duration;
+use tracing::info;
+
+#[derive(Parser)]
+#[command(
+    name = "erebus-client",
+    about = "Send traffic through the Erebus mixnet"
+)]
+struct Cli {
+    #[command(subcommand)]
+    command: Command,
+}
+
+#[derive(Subcommand)]
+enum Command {
+    /// Sends a message through the mixnet and prints the reply.
+    Send {
+        #[arg(long)]
+        registry: PathBuf,
+        /// Destination service, `host:port`.
+        #[arg(long)]
+        to: String,
+        #[arg(long)]
+        message: String,
+        /// Address the client listens on for the reply.
+        #[arg(long, default_value = "127.0.0.1:0")]
+        listen: String,
+        /// Mean per-hop delay in milliseconds.
+        #[arg(long, default_value_t = 50.0)]
+        mean_delay_ms: f64,
+        /// How long to wait for the reply.
+        #[arg(long, default_value_t = 10)]
+        timeout_secs: u64,
+    },
+    /// Times a packet routed from the client back to itself.
+    Probe {
+        #[arg(long)]
+        registry: PathBuf,
+        #[arg(long, default_value = "127.0.0.1:0")]
+        listen: String,
+        #[arg(long, default_value_t = 50.0)]
+        mean_delay_ms: f64,
+    },
+    /// Runs a destination service that echoes what it is sent.
+    Sink {
+        #[arg(long)]
+        registry: PathBuf,
+        #[arg(long, default_value = "127.0.0.1:9100")]
+        listen: String,
+    },
+}
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "erebus_client=info".into()),
+        )
+        .init();
+
+    match Cli::parse().command {
+        Command::Send {
+            registry,
+            to,
+            message,
+            listen,
+            mean_delay_ms,
+            timeout_secs,
+        } => {
+            let (client, serve) = Client::bind(ClientConfig {
+                registry: Registry::load(&registry)?,
+                listen,
+                mean_delay_ms,
+            })
+            .await?;
+            tokio::spawn(serve);
+
+            let reply = client
+                .request(&to, message.as_bytes(), Duration::from_secs(timeout_secs))
+                .await?;
+            println!("{}", String::from_utf8_lossy(&reply));
+        }
+        Command::Probe {
+            registry,
+            listen,
+            mean_delay_ms,
+        } => {
+            let (client, serve) = Client::bind(ClientConfig {
+                registry: Registry::load(&registry)?,
+                listen,
+                mean_delay_ms,
+            })
+            .await?;
+            tokio::spawn(serve);
+
+            let elapsed = client.loop_probe(Duration::from_secs(10)).await?;
+            println!("probe returned in {} ms", elapsed.as_millis());
+        }
+        Command::Sink { registry, listen } => {
+            let sink = Sink::new(
+                Registry::load(&registry)?,
+                Arc::new(|body: &[u8]| {
+                    Some(format!("echo: {}", String::from_utf8_lossy(body)).into_bytes())
+                }),
+            );
+            let (address, serve) = sink.bind(&listen).await?;
+            info!(%address, "destination service listening");
+            serve.await;
+        }
+    }
+
+    Ok(())
+}

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <title>Erebus</title>
+  <defs>
+    <clipPath id="erebus-bands">
+      <rect x="24" y="24" width="208" height="92" />
+      <rect x="24" y="128" width="208" height="34" />
+      <rect x="24" y="174" width="208" height="58" />
+    </clipPath>
+  </defs>
+  <rect width="512" height="512" fill="#b8452b" />
+  <g transform="translate(92 84) scale(1.34)">
+    <path fill="#f5f3f0" clip-path="url(#erebus-bands)" d="M118.11 40.56A88 88 0 1 0 215.44 137.89A74 74 0 0 1 118.11 40.56Z" />
+  </g>
+</svg>
