@@ -9,13 +9,15 @@ exact for the shape to close.
 
     python3 scripts/brand.py
 
-The Apple touch icon has to be a raster, because `apple-icon` does not accept
-SVG. Rendering it needs `cairosvg`; without it the SVGs are still written and
-the existing PNG is left alone.
+The Apple touch icon and the .ico have to be rasters, because `apple-icon` does
+not accept SVG and Safari asks for /favicon.ico regardless of icon.svg.
+Rendering them needs `cairosvg` and `Pillow`; without those the SVGs are still
+written and the existing rasters are left alone.
 """
 
 from __future__ import annotations
 
+import io
 import math
 from pathlib import Path
 
@@ -36,6 +38,9 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "public" / "brand"
 APPLE_ICON = ROOT / "src" / "app" / "apple-icon.png"
 APPLE_ICON_SIZE = 180
+# Safari and older crawlers ask for /favicon.ico and ignore icon.svg.
+FAVICON = ROOT / "src" / "app" / "favicon.ico"
+FAVICON_SIZES = (16, 32, 48, 180)
 OPENGRAPH_IMAGE = ROOT / "src" / "app" / "opengraph-image.png"
 OPENGRAPH_SIZE = (1200, 630)
 # GitHub crops its social preview to 1280x640.
@@ -226,6 +231,24 @@ def main() -> None:
             output_height=height,
         )
         print(f"wrote {path}")
+
+    try:
+        from PIL import Image
+    except ImportError:
+        print("Pillow not installed; left favicon.ico as it was")
+        return
+
+    largest = max(FAVICON_SIZES)
+    png = cairosvg.svg2png(
+        bytestring=icon().encode(),
+        output_width=largest,
+        output_height=largest,
+    )
+    # Next's ico decoder rejects frames that are not RGBA.
+    Image.open(io.BytesIO(png)).convert("RGBA").save(
+        FAVICON, sizes=[(s, s) for s in FAVICON_SIZES]
+    )
+    print(f"wrote {FAVICON}")
 
 
 if __name__ == "__main__":
