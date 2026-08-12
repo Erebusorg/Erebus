@@ -2,7 +2,8 @@
 pragma solidity ^0.8.24;
 
 import {Test} from "forge-std/Test.sol";
-import {FeePool, ISpendVerifier} from "../src/FeePool.sol";
+import {FeePool, ISpendVerifier, INodeRegistry} from "../src/FeePool.sol";
+import {NodeRegistry} from "../src/NodeRegistry.sol";
 import {MiMC} from "../src/MiMC.sol";
 
 /// Accepts everything. Lets these tests cover the pool's own rules — the
@@ -34,16 +35,34 @@ contract Refuser {
 
 contract FeePoolTest is Test {
     uint256 constant DENOMINATION = 0.01 ether;
+    uint256 constant MIN_STAKE = 1 ether;
+    /// Every spend in these tests is submitted well before this.
+    uint256 constant DEADLINE = 4_000_000_000;
 
     FeePool pool;
+    NodeRegistry registry;
     address payer = address(0xBEEF);
     address entry = address(0xE1);
     address relay = address(0xE2);
     address exit = address(0xE3);
+    uint256 nextKey = 1;
 
     function setUp() public {
-        pool = new FeePool(DENOMINATION, new AlwaysVerifier());
+        registry = new NodeRegistry(MIN_STAKE, 1 days, 1 hours, address(0xA1), address(0xA2));
+        pool = new FeePool(DENOMINATION, new AlwaysVerifier(), INodeRegistry(address(registry)));
         vm.deal(payer, 10 ether);
+
+        _run(entry);
+        _run(relay);
+        _run(exit);
+    }
+
+    /// Makes `operator` a node the network routes through, which is what the
+    /// pool requires of anyone it pays.
+    function _run(address operator) private {
+        vm.deal(operator, MIN_STAKE);
+        vm.prank(operator);
+        registry.register{value: MIN_STAKE}(bytes32(nextKey++), "127.0.0.1:9000");
     }
 
     function _nodes() private view returns (address[] memory recipients, uint256[] memory amounts) {
@@ -97,7 +116,9 @@ contract FeePoolTest is Test {
         _deposit(1);
         (address[] memory recipients, uint256[] memory amounts) = _nodes();
 
-        pool.spend(pool.currentRoot(), 42, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
+        pool.spend(
+            pool.currentRoot(), 42, DEADLINE, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]
+        );
 
         assertEq(pool.earned(entry), DENOMINATION / 3);
         assertEq(pool.earned(exit), DENOMINATION - 2 * (DENOMINATION / 3));
@@ -110,9 +131,9 @@ contract FeePoolTest is Test {
         (address[] memory recipients, uint256[] memory amounts) = _nodes();
         uint256 root = pool.currentRoot();
 
-        pool.spend(root, 42, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
+        pool.spend(root, 42, DEADLINE, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
         vm.expectRevert(FeePool.AlreadySpent.selector);
-        pool.spend(root, 42, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
+        pool.spend(root, 42, DEADLINE, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
     }
 
     function test_spend_rejects_an_unknown_root() public {
@@ -120,7 +141,46 @@ contract FeePoolTest is Test {
         (address[] memory recipients, uint256[] memory amounts) = _nodes();
 
         vm.expectRevert(FeePool.UnknownRoot.selector);
-        pool.spend(999, 42, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
+        pool.spend(999, 42, DEADLINE, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
+    }
+
+    function test_spend_rejects_a_recipient_that_is_not_a_node() public {
+        _deposit(1);
+        (address[] memory recipients, uint256[] memory amounts) = _nodes();
+        recipients[1] = address(0xDEAD);
+        uint256 root = pool.currentRoot();
+
+        vm.expectRevert(abi.encodeWithSelector(FeePool.NotANode.selector, address(0xDEAD)));
+        pool.spend(root, 42, DEADLINE, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
+    }
+
+    function test_spend_rejects_an_operator_that_has_left_the_set() public {
+        _deposit(1);
+        (address[] memory recipients, uint256[] memory amounts) = _nodes();
+        uint256 root = pool.currentRoot();
+
+        // The relay announces an exit: no longer selected, so no longer paid.
+        vm.prank(relay);
+        registry.announceExit(bytes32(uint256(2)));
+
+        vm.expectRevert(abi.encodeWithSelector(FeePool.NotANode.selector, relay));
+        pool.spend(root, 42, DEADLINE, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
+    }
+
+    function test_spend_rejects_an_expired_proof() public {
+        _deposit(1);
+        (address[] memory recipients, uint256[] memory amounts) = _nodes();
+        uint256 root = pool.currentRoot();
+        uint256 deadline = block.timestamp + 1 hours;
+
+        vm.warp(deadline + 1);
+        vm.expectRevert(abi.encodeWithSelector(FeePool.Expired.selector, deadline, block.timestamp));
+        pool.spend(root, 42, deadline, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
+
+        // One second earlier it would have been fine.
+        vm.warp(deadline);
+        pool.spend(root, 42, deadline, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
+        assertTrue(pool.spent(42));
     }
 
     function test_spend_rejects_a_total_that_is_not_the_denomination() public {
@@ -134,7 +194,7 @@ contract FeePoolTest is Test {
                 FeePool.PayoutNotDenomination.selector, DENOMINATION + 1, DENOMINATION
             )
         );
-        pool.spend(root, 42, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
+        pool.spend(root, 42, DEADLINE, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
     }
 
     function test_spend_rejects_mismatched_arrays() public {
@@ -144,28 +204,32 @@ contract FeePoolTest is Test {
         uint256 root = pool.currentRoot();
 
         vm.expectRevert(FeePool.PayoutMismatch.selector);
-        pool.spend(root, 42, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
+        pool.spend(root, 42, DEADLINE, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
     }
 
     function test_spend_rejects_a_bad_proof() public {
-        FeePool strict = new FeePool(DENOMINATION, new NeverVerifier());
+        FeePool strict =
+            new FeePool(DENOMINATION, new NeverVerifier(), INodeRegistry(address(registry)));
         vm.prank(payer);
         strict.deposit{value: DENOMINATION}(1);
         (address[] memory recipients, uint256[] memory amounts) = _nodes();
         uint256 root = strict.currentRoot();
 
         vm.expectRevert(FeePool.ProofRejected.selector);
-        strict.spend(root, 42, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
+        strict.spend(root, 42, DEADLINE, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
     }
 
     function test_claim_pays_once() public {
         _deposit(1);
         (address[] memory recipients, uint256[] memory amounts) = _nodes();
-        pool.spend(pool.currentRoot(), 42, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
+        pool.spend(
+            pool.currentRoot(), 42, DEADLINE, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]
+        );
 
+        uint256 before = entry.balance;
         vm.prank(entry);
         pool.claim();
-        assertEq(entry.balance, DENOMINATION / 3);
+        assertEq(entry.balance - before, DENOMINATION / 3);
         assertEq(pool.earned(entry), 0);
 
         vm.prank(entry);
@@ -175,6 +239,7 @@ contract FeePoolTest is Test {
 
     function test_a_node_that_refuses_money_cannot_block_a_spend() public {
         Refuser refuser = new Refuser();
+        _run(address(refuser));
         _deposit(1);
 
         address[] memory recipients = new address[](2);
@@ -184,35 +249,49 @@ contract FeePoolTest is Test {
         amounts[0] = DENOMINATION / 2;
         amounts[1] = DENOMINATION - DENOMINATION / 2;
 
-        pool.spend(pool.currentRoot(), 42, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]);
+        pool.spend(
+            pool.currentRoot(), 42, DEADLINE, recipients, amounts, [uint256(0), 0, 0, 0, 0, 0, 0, 0]
+        );
 
         vm.expectRevert("pool: transfer failed");
         refuser.claim(pool);
 
+        uint256 before = entry.balance;
         vm.prank(entry);
         pool.claim();
-        assertEq(entry.balance, DENOMINATION - DENOMINATION / 2);
+        assertEq(entry.balance - before, DENOMINATION - DENOMINATION / 2);
     }
 
     function test_the_payout_hash_binds_recipients_amounts_and_the_pool() public {
         (address[] memory recipients, uint256[] memory amounts) = _nodes();
-        uint256 base = pool.payoutHash(recipients, amounts);
+        uint256 base = pool.payoutHash(DEADLINE, recipients, amounts);
 
         address[] memory others = new address[](3);
         others[0] = entry;
         others[1] = relay;
         others[2] = address(0xDEAD);
-        assertNotEq(base, pool.payoutHash(others, amounts));
+        assertNotEq(base, pool.payoutHash(DEADLINE, others, amounts));
 
         uint256[] memory split = new uint256[](3);
         split[0] = DENOMINATION;
-        assertNotEq(base, pool.payoutHash(recipients, split));
+        assertNotEq(base, pool.payoutHash(DEADLINE, recipients, split));
 
-        FeePool twin = new FeePool(DENOMINATION, new AlwaysVerifier());
-        assertNotEq(base, twin.payoutHash(recipients, amounts), "another pool, another hash");
+        assertNotEq(
+            base,
+            pool.payoutHash(DEADLINE + 1, recipients, amounts),
+            "another deadline, another hash"
+        );
+
+        FeePool twin =
+            new FeePool(DENOMINATION, new AlwaysVerifier(), INodeRegistry(address(registry)));
+        assertNotEq(
+            base, twin.payoutHash(DEADLINE, recipients, amounts), "another pool, another hash"
+        );
 
         vm.chainId(999);
-        assertNotEq(base, pool.payoutHash(recipients, amounts), "another chain, another hash");
+        assertNotEq(
+            base, pool.payoutHash(DEADLINE, recipients, amounts), "another chain, another hash"
+        );
     }
 
     function test_old_roots_expire_out_of_the_history() public {

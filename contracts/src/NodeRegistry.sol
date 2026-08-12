@@ -46,6 +46,12 @@ contract NodeRegistry {
 
     bytes32[] private _keys;
     mapping(bytes32 => Node) private _nodes;
+    /// How many selectable nodes an operator runs.
+    ///
+    /// @dev Kept as a counter rather than derived on demand so that a contract
+    /// paying nodes can ask about one address without walking the whole set. It
+    /// is what makes a fee payable to "a node" rather than to any address at all.
+    mapping(address => uint256) public activeNodes;
     /// The seed for an epoch, recorded the first time anyone touches the
     /// registry in it.
     mapping(uint256 => bytes32) public seedOf;
@@ -97,6 +103,7 @@ contract NodeRegistry {
             key: key, endpoint: endpoint, stake: msg.value, operator: msg.sender, withdrawableAt: 0
         });
         _keys.push(key);
+        if (_isActive(_nodes[key])) activeNodes[msg.sender]++;
         _seed();
 
         emit Registered(key, msg.sender, endpoint, msg.value);
@@ -118,7 +125,9 @@ contract NodeRegistry {
     function addStake(bytes32 key) external payable {
         Node storage node = _node(key);
         if (node.withdrawableAt != 0) revert Leaving(key);
+        bool was = _isActive(node);
         node.stake += msg.value;
+        if (!was && _isActive(node)) activeNodes[node.operator]++;
         _seed();
         emit StakeAdded(key, node.stake);
     }
@@ -128,7 +137,9 @@ contract NodeRegistry {
     function announceExit(bytes32 key) external {
         Node storage node = _mine(key);
         if (node.withdrawableAt != 0) revert Leaving(key);
+        bool was = _isActive(node);
         node.withdrawableAt = uint64(block.timestamp) + unbondingPeriod;
+        if (was) activeNodes[node.operator]--;
         _seed();
         emit ExitAnnounced(key, node.withdrawableAt);
     }
@@ -141,6 +152,7 @@ contract NodeRegistry {
 
         uint256 amount = node.stake;
         address operator = node.operator;
+        // `announceExit` already took this node out of the count.
         _remove(key);
         _seed();
 
@@ -163,8 +175,13 @@ contract NodeRegistry {
         Node storage node = _node(key);
         if (node.stake == 0 || amount == 0) revert NothingToSlash();
 
+        bool was = _isActive(node);
         uint256 taken = amount > node.stake ? node.stake : amount;
         node.stake -= taken;
+        // A node slashed below the minimum stops being selectable, so it also
+        // stops being payable: paying it would be paying an address the network
+        // is no longer routing through.
+        if (was && !_isActive(node)) activeNodes[node.operator]--;
         _seed();
 
         emit Slashed(key, taken, reason);

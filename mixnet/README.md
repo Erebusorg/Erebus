@@ -131,9 +131,11 @@ cargo fmt --all --check
   fills. Correct only because node keys are meant to rotate per epoch, which the
   node does not yet do.
 - **Fees pay nodes, not packets.** A spend from `FeePool` pays the operators of a
-  route drawn from the registry. Nothing proves those nodes carried anything, and
-  no node checks a fee before forwarding: a credential that identified the route
-  of a known packet would rebuild the link the mixnet exists to break.
+  route drawn from the registry — the pool checks each payee still runs an active
+  node, so it cannot pay a stranger, but nothing proves those nodes carried
+  anything, and no node checks a fee before forwarding: a credential that
+  identified the route of a known packet would rebuild the link the mixnet exists
+  to break.
 - **The spend circuit's setup is reproducible.** Anyone can regenerate the keys,
   which makes the verifier auditable and the pool forgeable. Test money only.
 - **Slashing is a judgement, not a proof.** The contract records a decision the
