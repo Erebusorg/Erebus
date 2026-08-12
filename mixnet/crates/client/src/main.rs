@@ -47,6 +47,19 @@ enum Command {
         #[arg(long, default_value_t = 50.0)]
         mean_delay_ms: f64,
     },
+    /// Prints the payout addresses of one freshly selected path.
+    ///
+    /// A payer spends a fee note on these three addresses. Selecting a path here
+    /// rather than reusing the one a `send` took is deliberate: a fee that named
+    /// the exact route of a known packet would be the link the mixnet exists to
+    /// break. The registry is public, so anyone can do this without asking a node
+    /// anything.
+    Payees {
+        #[command(flatten)]
+        registry: RegistrySource,
+        #[arg(long, default_value_t = 50.0)]
+        mean_delay_ms: f64,
+    },
     /// Runs a destination service that echoes what it is sent.
     Sink {
         #[command(flatten)]
@@ -112,6 +125,14 @@ async fn main() -> Result<()> {
 
             let elapsed = client.loop_probe(Duration::from_secs(10)).await?;
             println!("probe returned in {} ms", elapsed.as_millis());
+        }
+        Command::Payees {
+            registry,
+            mean_delay_ms,
+        } => {
+            let registry = registry.load().await?;
+            let path = registry.select_path(&mut rand::thread_rng(), mean_delay_ms)?;
+            println!("{}", registry.payees(&path)?.join(","));
         }
         Command::Sink { registry, listen } => {
             let sink = Sink::new(

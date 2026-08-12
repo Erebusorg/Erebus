@@ -1,0 +1,26 @@
+[package]
+name = "erebus-fees"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Shielded fee notes for Erebus: MiMC commitments, a Groth16 spend proof, and the calldata that redeems it."
+
+[dependencies]
+ark-bn254 = "0.5.0"
+ark-crypto-primitives = { version = "0.5.0", features = ["snark"] }
+ark-ff = "0.5.0"
+ark-groth16 = { version = "0.5.0", default-features = false }
+ark-relations = "0.5.1"
+ark-r1cs-std = "0.5.0"
+ark-serialize = "0.5.0"
+ark-snark = "0.5.1"
+ark-std = "0.5.0"
+clap = { workspace = true }
+hex = "0.4.3"
+rand = { workspace = true }
+rand_chacha = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha3 = "0.10.8"
+thiserror = { workspace = true }

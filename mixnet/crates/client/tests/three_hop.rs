@@ -33,6 +33,7 @@ async fn start_network(nodes: usize) -> Network {
             id: encode_id(&key.public().to_bytes()),
             address: format!("127.0.0.1:{}", reserve_port()),
             stake: 1,
+            payout: None,
         })
         .collect();
 
