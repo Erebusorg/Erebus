@@ -9,6 +9,7 @@ members = [
     "crates/client",
     "crates/sdk",
     "crates/gateway",
+    "crates/chain",
 ]
 
 [workspace.package]
@@ -18,6 +19,7 @@ license = "Apache-2.0"
 repository = "https://github.com/AlexKarys/erebus"
 
 [workspace.dependencies]
+erebus-chain = { path = "crates/chain" }
 erebus-envelope = { path = "crates/envelope" }
 erebus-sphinx = { path = "crates/sphinx" }
 erebus-topology = { path = "crates/topology" }

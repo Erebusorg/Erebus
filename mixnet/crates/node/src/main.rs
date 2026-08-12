@@ -2,9 +2,10 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
+use erebus_chain::RegistrySource;
 use erebus_node::{MixNode, NodeConfig};
 use erebus_sphinx::PrivateKey;
-use erebus_topology::{decode_id, encode_id, Registry};
+use erebus_topology::{decode_id, encode_id};
 use tracing::info;
 
 #[derive(Parser)]
@@ -30,9 +31,8 @@ enum Command {
         /// Address to listen on.
         #[arg(long, default_value = "0.0.0.0:9000")]
         listen: String,
-        /// Registry file describing the node set.
-        #[arg(long)]
-        registry: PathBuf,
+        #[command(flatten)]
+        registry: RegistrySource,
     },
 }
 
@@ -61,7 +61,7 @@ async fn main() -> Result<()> {
                     .with_context(|| format!("reading {}", key.display()))?
                     .trim(),
             )?);
-            let registry = Registry::load(&registry)?;
+            let registry = registry.load().await?;
 
             let (address, serve) = MixNode::bind(NodeConfig {
                 key,

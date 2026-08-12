@@ -63,13 +63,15 @@ export class ErebusClient {
   static async connect(options: ConnectOptions): Promise<ErebusClient> {
     await loadWasm(options.wasm);
 
-    let self: ErebusClient | undefined;
+    // The socket's callbacks fire against a client that does not exist until the
+    // greeting has arrived, so they reach it through a cell rather than directly.
+    const cell: { client?: ErebusClient } = {};
     const socket = await GatewaySocket.open(
       options.gateway,
       {
-        onDelivery: (frame) => self?.accept(frame),
+        onDelivery: (frame) => cell.client?.accept(frame),
         onClose: () =>
-          self?.disconnect(new Error("the gateway closed the socket")),
+          cell.client?.disconnect(new Error("the gateway closed the socket")),
       },
       options.socket,
     );
@@ -79,8 +81,8 @@ export class ErebusClient {
       options.meanDelayMs ?? 50,
       socket.greeting.tag,
     );
-    self = new ErebusClient(socket, mix, options.timeoutMs ?? 20_000);
-    return self;
+    cell.client = new ErebusClient(socket, mix, options.timeoutMs ?? 20_000);
+    return cell.client;
   }
 
   /** The address the mixnet delivers this client's replies to. */

@@ -1,9 +1,7 @@
-use std::path::PathBuf;
-
 use anyhow::Result;
 use clap::Parser;
+use erebus_chain::RegistrySource;
 use erebus_gateway::{Gateway, GatewayConfig};
-use erebus_topology::Registry;
 use tracing::info;
 
 #[derive(Parser)]
@@ -21,9 +19,8 @@ struct Cli {
     /// The reply address handed to clients, when it differs from `--mix-listen`.
     #[arg(long)]
     advertise: Option<String>,
-    /// Registry file describing the node set.
-    #[arg(long)]
-    registry: PathBuf,
+    #[command(flatten)]
+    registry: RegistrySource,
 }
 
 #[tokio::main]
@@ -40,7 +37,7 @@ async fn main() -> Result<()> {
         listen: cli.listen,
         mix_listen: cli.mix_listen,
         advertise: cli.advertise,
-        registry: Registry::load(&cli.registry)?,
+        registry: cli.registry.load().await?,
     })
     .await?;
 

@@ -1,11 +1,9 @@
-use std::path::PathBuf;
-
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use erebus_chain::RegistrySource;
 use erebus_client::rpc::RpcService;
 use erebus_client::sink::{immediate, Sink};
 use erebus_client::{Client, ClientConfig};
-use erebus_topology::Registry;
 use tokio::time::Duration;
 use tracing::info;
 
@@ -23,8 +21,8 @@ struct Cli {
 enum Command {
     /// Sends a message through the mixnet and prints the reply.
     Send {
-        #[arg(long)]
-        registry: PathBuf,
+        #[command(flatten)]
+        registry: RegistrySource,
         /// Destination service, `host:port`.
         #[arg(long)]
         to: String,
@@ -42,8 +40,8 @@ enum Command {
     },
     /// Times a packet routed from the client back to itself.
     Probe {
-        #[arg(long)]
-        registry: PathBuf,
+        #[command(flatten)]
+        registry: RegistrySource,
         #[arg(long, default_value = "127.0.0.1:0")]
         listen: String,
         #[arg(long, default_value_t = 50.0)]
@@ -51,15 +49,15 @@ enum Command {
     },
     /// Runs a destination service that echoes what it is sent.
     Sink {
-        #[arg(long)]
-        registry: PathBuf,
+        #[command(flatten)]
+        registry: RegistrySource,
         #[arg(long, default_value = "127.0.0.1:9100")]
         listen: String,
     },
     /// Runs a destination service that forwards JSON-RPC to a chain node.
     Rpc {
-        #[arg(long)]
-        registry: PathBuf,
+        #[command(flatten)]
+        registry: RegistrySource,
         #[arg(long, default_value = "127.0.0.1:9100")]
         listen: String,
         /// The chain node this exit forwards to, as a URL.
@@ -87,7 +85,7 @@ async fn main() -> Result<()> {
             timeout_secs,
         } => {
             let (client, serve) = Client::bind(ClientConfig {
-                registry: Registry::load(&registry)?,
+                registry: registry.load().await?,
                 listen,
                 mean_delay_ms,
             })
@@ -105,7 +103,7 @@ async fn main() -> Result<()> {
             mean_delay_ms,
         } => {
             let (client, serve) = Client::bind(ClientConfig {
-                registry: Registry::load(&registry)?,
+                registry: registry.load().await?,
                 listen,
                 mean_delay_ms,
             })
@@ -117,7 +115,7 @@ async fn main() -> Result<()> {
         }
         Command::Sink { registry, listen } => {
             let sink = Sink::new(
-                Registry::load(&registry)?,
+                registry.load().await?,
                 immediate(|body: &[u8]| {
                     Some(format!("echo: {}", String::from_utf8_lossy(body)).into_bytes())
                 }),
@@ -132,7 +130,7 @@ async fn main() -> Result<()> {
             upstream,
         } => {
             let sink = Sink::new(
-                Registry::load(&registry)?,
+                registry.load().await?,
                 RpcService::with_default_methods(upstream.clone()).handler(),
             );
             let (address, serve) = sink.bind(&listen).await?;
