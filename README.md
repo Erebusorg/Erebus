@@ -6,11 +6,11 @@
   Network-layer privacy for tokenized finance on
   <a href="https://docs.robinhood.com/chain/">Robinhood Chain</a>.
   <br>
-  <a href="https://erebus-ten.vercel.app">Site</a> ·
-  <a href="https://erebus-ten.vercel.app/paper">Paper</a> ·
-  <a href="https://erebus-ten.vercel.app/docs">Docs</a> ·
-  <a href="https://erebus-ten.vercel.app/sdk">SDK</a> ·
-  <a href="https://erebus-ten.vercel.app/benchmarks">Benchmarks</a> ·
+  <a href="https://erebusorg.com">Site</a> ·
+  <a href="https://erebusorg.com/paper">Paper</a> ·
+  <a href="https://erebusorg.com/docs">Docs</a> ·
+  <a href="https://erebusorg.com/sdk">SDK</a> ·
+  <a href="https://erebusorg.com/benchmarks">Benchmarks</a> ·
   <a href="https://x.com/Erebusorg">@Erebusorg</a>
 </p>
 
