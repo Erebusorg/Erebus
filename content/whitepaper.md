@@ -314,7 +314,9 @@ participation: a client needs no account, signs nothing, and pays nothing, and
 because everyone reads the same contract nobody can be handed a tailored node
 set. An operator that announces an exit stops being selected in that call
 immediately, while its bond stays slashable for the unbonding period, so leaving
-is not a way out of a penalty. It is deployed nowhere yet.
+is not a way out of a penalty. It is deployed and verified on Robinhood Chain
+testnet at `0x1afa15F03e8d4f656374864750E0b62CCB6C8ad7` (chain 46630); no
+operator has registered against it yet, so the set it returns is empty.
 
 ### 5.2 Deterministic layer assignment
 

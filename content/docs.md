@@ -164,10 +164,14 @@ proof. The pool is safe to test with and unsafe to hold money.
 
 ## Not built yet
 
-The registry and the fee pool are written and tested but deployed nowhere, so
-stake and fees are real only on a chain you start yourself. There is no trusted
+The registry, the verifier, and the fee pool are deployed and verified on
+Robinhood Chain testnet (chain 46630) — addresses are on the
+[network](/network) page, which reads the registry directly — but no operator has
+staked in, so the set is empty and routing still happens on a chain and a devnet
+you start yourself. Testnet only: the setup seed is public, so the pool must not
+hold real value. There is no trusted
 setup ceremony, the decision to slash is still a human one made off chain, and
-there is no key rotation and no node-originated cover traffic. No public network
+there is no key rotation and no node-originated cover traffic. No public fleet
 is running. A browser can already use all of
 this — see the [SDK](/sdk) — but only against a devnet you start yourself. The
 [paper](/paper) states which of these are engineering work and which are open

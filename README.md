@@ -49,8 +49,22 @@ compiles to WebAssembly and an EIP-1193 provider sends Ethereum JSON-RPC through
 three hops. The node set can come from a registry contract instead of a file the
 participants have to trust each other about. Nodes can be paid from a shielded
 fee pool, so a payment does not name the payer — on a trusted setup that is
-reproducible and therefore unsafe for real value. No public network is running;
-everything runs against a devnet you start yourself.
+reproducible and therefore unsafe for real value.
+
+The registry, the verifier, and the fee pool are deployed and verified on
+Robinhood Chain testnet (chain 46630), and [the network page](https://erebusorg.com/network)
+reads that registry directly:
+
+| Contract | Address |
+| --- | --- |
+| `NodeRegistry` | [`0x1afa15F03e8d4f656374864750E0b62CCB6C8ad7`](https://explorer.testnet.chain.robinhood.com/address/0x1afa15F03e8d4f656374864750E0b62CCB6C8ad7) |
+| `SpendVerifier` | [`0x53f1a479D2a56548A87d5EE7D647BD73ECE80B73`](https://explorer.testnet.chain.robinhood.com/address/0x53f1a479D2a56548A87d5EE7D647BD73ECE80B73) |
+| `FeePool` | [`0x7e4E497aa102FdE094431F81BEFec6652A98b799`](https://explorer.testnet.chain.robinhood.com/address/0x7e4E497aa102FdE094431F81BEFec6652A98b799) |
+
+Testnet only, and the pool takes test value only: the spend circuit's setup seed
+is public, so anyone can forge a proof against that verifier. No public node
+fleet is running — the mixnet itself still runs against a devnet you start
+yourself.
 
 | Piece | State |
 | --- | --- |
@@ -66,6 +80,7 @@ everything runs against a devnet you start yourself.
 | Payouts restricted to active registered operators, proofs that expire | done |
 | Trusted setup ceremony for the spend circuit | not started |
 | Paying per packet, and nodes that check a fee before forwarding | not started |
+| Contracts deployed and verified on Robinhood Chain testnet | done — chain 46630 |
 | Public fleet, audit, mainnet, token | none |
 
 ## The site
@@ -75,7 +90,7 @@ Twelve pages, no analytics, no cookies, no third-party scripts.
 | | |
 | --- | --- |
 | <img src="docs/media/home.png" alt="Landing page"> | <img src="docs/media/network.png" alt="Network page"> |
-| **Landing** — what it does and what it deliberately does not hide. | **Network** — the layer table stays empty on purpose: until the registry is deployed and nodes are staked in it, a node list is something we could type rather than something you can verify. |
+| **Landing** — what it does and what it deliberately does not hide. | **Network** — the node table is one `snapshot()` call against the deployed registry, so it is empty until an operator stakes in: a list we typed is not one you can verify. |
 | <img src="docs/media/explorer.png" alt="Packet explorer"> | <img src="docs/media/benchmarks.png" alt="Benchmarks"> |
 | **Explorer** — follow one packet through three hops. It runs entirely in your browser against no network, because a live traffic map would publish the timing correlations a mixnet exists to destroy. | **Benchmarks** — measured with `cargo run --release -p erebus-sphinx --example bench`, machine named on the page, not asserted. |
 

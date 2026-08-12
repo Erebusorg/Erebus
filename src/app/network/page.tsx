@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Topology } from "@/components/topology";
+import { chain, explorerAddress, formatEth, readNetwork } from "@/lib/chain";
 
 export const metadata: Metadata = {
   title: "Network — Erebus",
@@ -34,23 +35,32 @@ const layers = [
     name: "Entry",
     role: "Accepts client packets",
     sees: "Your address",
-    operators: "—",
   },
   {
     name: "Relay",
     role: "Breaks the entry–exit link",
     sees: "Neither end of the path",
-    operators: "—",
   },
   {
     name: "Exit",
     role: "Delivers to the destination",
     sees: "The destination and the payload",
-    operators: "—",
   },
 ];
 
-export default function NetworkPage() {
+const contracts = [
+  { name: "NodeRegistry", address: chain.registry },
+  { name: "FeePool", address: chain.feePool },
+  { name: "SpendVerifier", address: chain.verifier },
+];
+
+function short(value: string) {
+  return `${value.slice(0, 10)}…${value.slice(-6)}`;
+}
+
+export default async function NetworkPage() {
+  const live = await readNetwork();
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-20 sm:py-28">
       <header className="border-b border-line pb-10">
@@ -58,20 +68,135 @@ export default function NetworkPage() {
           Network
         </p>
         <h1 className="mt-6 max-w-3xl text-3xl leading-tight tracking-[-0.02em] sm:text-5xl">
-          No public network is running yet
+          {live && live.nodes.length > 0
+            ? `${live.nodes.length} node${live.nodes.length === 1 ? "" : "s"} in the set`
+            : "The contracts are live; no node has staked in yet"}
         </h1>
         <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-muted">
-          The mixnet runs today only where you start it: three nodes on one
-          machine, from the{" "}
+          The registry and the fee pool are deployed and verified on {chain.name}
+          , and everything below the fold is one <code>snapshot()</code> call
+          against the registry rather than a number we typed in. Nobody runs a
+          public fleet yet, so until an operator stakes in the honest answer is an
+          empty set. Three nodes on one machine, from the{" "}
           <Link href="/docs" className="text-accent">
             docs
           </Link>
-          . The registry nodes stake in and the pool that pays them are written
-          and tested, and the node daemon already reads its set off a chain — but
-          neither is deployed anywhere, so the counts below stay empty. A node
-          list nobody can verify is worth nothing.
+          , is what exists today.
+        </p>
+        <div className="mt-8 grid gap-px bg-line sm:grid-cols-3">
+          {contracts.map((c) => (
+            <div key={c.name} className="bg-background p-5">
+              <p className="font-mono text-[11px] tracking-[0.18em] uppercase text-muted">
+                {c.name}
+              </p>
+              <a
+                href={explorerAddress(c.address)}
+                className="mt-2 block font-mono text-[13px] text-accent"
+              >
+                {short(c.address)}
+              </a>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-[13px] text-muted">
+          Chain {chain.id}, test value only: the spend circuit&apos;s trusted
+          setup is reproducible, so anyone can forge a proof against this pool.
         </p>
       </header>
+
+      <section className="mt-16">
+        <h2 className="font-mono text-[11px] tracking-[0.24em] uppercase text-muted">
+          Read off chain
+        </h2>
+        {live === null ? (
+          <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-muted">
+            The RPC did not answer, so there is nothing to show here rather than
+            something invented. Ask it yourself:{" "}
+            <code className="font-mono text-[13px]">
+              cast call {short(chain.registry)} &quot;snapshot()&quot; --rpc-url{" "}
+              {chain.rpc}
+            </code>
+          </p>
+        ) : (
+          <>
+            <div className="mt-6 grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { k: "Active nodes", v: String(live.nodes.length) },
+                { k: "Keys ever registered", v: String(live.registered) },
+                { k: "Minimum bond", v: formatEth(live.minStake) },
+                { k: "Notes in the pool", v: String(live.notes) },
+                { k: "Epoch", v: String(live.epoch) },
+                { k: "Epoch length", v: `${live.epochLength} s` },
+                { k: "Fee denomination", v: formatEth(live.denomination) },
+                {
+                  k: "Epoch seed",
+                  v:
+                    BigInt(live.seed) === 0n
+                      ? "not recorded yet"
+                      : short(live.seed),
+                },
+              ].map((s) => (
+                <div key={s.k} className="bg-background p-6">
+                  <p className="font-mono text-[11px] tracking-[0.18em] uppercase text-muted">
+                    {s.k}
+                  </p>
+                  <p className="mt-2 font-mono text-[14px]">{s.v}</p>
+                </div>
+              ))}
+            </div>
+            {live.nodes.length > 0 && (
+              <div className="mt-8 overflow-x-auto">
+                <table className="w-full border-collapse text-left text-[13px]">
+                  <thead>
+                    <tr className="font-mono text-[11px] tracking-[0.14em] uppercase text-muted">
+                      <th className="border-b border-line py-3 pr-6 font-normal">
+                        Key
+                      </th>
+                      <th className="border-b border-line py-3 pr-6 font-normal">
+                        Endpoint
+                      </th>
+                      <th className="border-b border-line py-3 pr-6 font-normal">
+                        Bond
+                      </th>
+                      <th className="border-b border-line py-3 font-normal">
+                        Operator
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="font-mono">
+                    {live.nodes.map((n) => (
+                      <tr key={n.key}>
+                        <td className="border-b border-line py-4 pr-6">
+                          {short(n.key)}
+                        </td>
+                        <td className="border-b border-line py-4 pr-6 text-muted">
+                          {n.endpoint}
+                        </td>
+                        <td className="border-b border-line py-4 pr-6 text-muted">
+                          {formatEth(n.stake)}
+                        </td>
+                        <td className="border-b border-line py-4">
+                          <a
+                            href={explorerAddress(n.operator)}
+                            className="text-accent"
+                          >
+                            {short(n.operator)}
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <p className="mt-4 text-[13px] text-muted">
+              Which layer a node lands in is not listed, and not the
+              registry&apos;s to decide: every client derives it from the epoch
+              seed and the node&apos;s key.
+            </p>
+          </>
+        )}
+      </section>
 
       <section className="mt-16">
         <h2 className="font-mono text-[11px] tracking-[0.24em] uppercase text-muted">
@@ -87,11 +212,8 @@ export default function NetworkPage() {
                 <th className="border-b border-line py-3 pr-6 font-normal">
                   Role
                 </th>
-                <th className="border-b border-line py-3 pr-6 font-normal">
-                  Learns
-                </th>
                 <th className="border-b border-line py-3 font-normal">
-                  Operators
+                  Learns
                 </th>
               </tr>
             </thead>
@@ -102,11 +224,8 @@ export default function NetworkPage() {
                   <td className="border-b border-line py-4 pr-6 text-muted">
                     {l.role}
                   </td>
-                  <td className="border-b border-line py-4 pr-6 text-muted">
+                  <td className="border-b border-line py-4 text-muted">
                     {l.sees}
-                  </td>
-                  <td className="border-b border-line py-4 font-mono text-muted">
-                    {l.operators}
                   </td>
                 </tr>
               ))}
@@ -147,9 +266,9 @@ export default function NetworkPage() {
         </h2>
         <ol className="mt-6 max-w-2xl list-decimal space-y-3 pl-5 text-[15px] leading-relaxed text-muted">
           <li>
-            The registry contract deployed on Robinhood Chain, holding each
-            operator&apos;s key, endpoint, and bond, so the node list is not ours
-            to edit. Written and tested; not deployed.
+            Operators. The registry is deployed and holds each one&apos;s key,
+            endpoint, and bond, so the list is not ours to edit — but a set we
+            staked ourselves would not be a mixnet either.
           </li>
           <li>
             A reason to run a node. The shielded fee pool now pays the operators
@@ -169,8 +288,8 @@ export default function NetworkPage() {
           </li>
         </ol>
         <p className="mt-8 text-[13px] text-muted">
-          Until then, treat every number on this page as a protocol constant,
-          not a measurement. The measured ones live in the{" "}
+          Treat the protocol parameters as constants, not measurements — only the
+          on-chain figures are read live. The measured ones live in the{" "}
           <Link href="/benchmarks" className="text-accent">
             benchmarks
           </Link>
