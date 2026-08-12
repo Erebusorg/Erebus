@@ -63,6 +63,7 @@ everything runs against a devnet you start yourself.
 | Nodes, client, and gateway reading the node set off chain | done — [`mixnet/crates/chain`](mixnet/crates/chain) |
 | Shielded fee pool: notes, nullifiers, Groth16 spend proof | done, unsafe setup — [`contracts/src/FeePool.sol`](contracts/src/FeePool.sol), [`mixnet/crates/fees`](mixnet/crates/fees) |
 | Paying the nodes of a route without naming the payer | done — `mixnet/scripts/paid-round.sh` |
+| Payouts restricted to active registered operators, proofs that expire | done |
 | Trusted setup ceremony for the spend circuit | not started |
 | Paying per packet, and nodes that check a fee before forwarding | not started |
 | Public fleet, audit, mainnet, token | none |

@@ -3,6 +3,10 @@ pragma solidity ^0.8.24;
 
 import {MiMC} from "./MiMC.sol";
 
+interface INodeRegistry {
+    function activeNodes(address operator) external view returns (uint256);
+}
+
 interface ISpendVerifier {
     function verify(uint256[8] calldata proof, uint256[3] calldata input)
         external
@@ -24,6 +28,11 @@ interface ISpendVerifier {
 /// The fixed denomination is not a convenience: with variable amounts the value
 /// would identify the deposit, and the proof would be pointless.
 ///
+/// Payouts only reach operators who run a node the network is currently routing
+/// through, which the registry answers. That does not make the pool a reward for
+/// work — see below — but it does stop it being a way to move value between two
+/// addresses with the deposit's origin erased.
+///
 /// What this does not do: meter traffic. It cannot tell whether a node carried
 /// the packets it is being paid for — a payer chooses what to spend and on whom.
 /// Enforcing payment per packet needs a per-hop credential the node can check
@@ -43,6 +52,8 @@ contract FeePool {
     /// The one amount a deposit can be.
     uint256 public immutable denomination;
     ISpendVerifier public immutable verifier;
+    /// Who counts as a node.
+    INodeRegistry public immutable registry;
 
     /// The rightmost node the tree knows at each level, which is all an append
     /// needs.
@@ -72,12 +83,16 @@ contract FeePool {
     error PayoutNotDenomination(uint256 total, uint256 required);
     error ProofRejected();
     error NothingToClaim();
+    error NotANode(address recipient);
+    error Expired(uint256 deadline, uint256 now_);
 
-    constructor(uint256 denomination_, ISpendVerifier verifier_) {
+    constructor(uint256 denomination_, ISpendVerifier verifier_, INodeRegistry registry_) {
         require(denomination_ > 0, "pool: zero denomination");
         require(address(verifier_) != address(0), "pool: no verifier");
+        require(address(registry_) != address(0), "pool: no registry");
         denomination = denomination_;
         verifier = verifier_;
+        registry = registry_;
 
         _zeros[0] = uint256(keccak256(EMPTY_SEED)) % MiMC.R;
         for (uint256 i = 1; i <= DEPTH; i++) {
@@ -111,23 +126,30 @@ contract FeePool {
     function spend(
         uint256 root,
         uint256 nullifierHash,
+        uint256 deadline,
         address[] calldata recipients,
         uint256[] calldata amounts,
         uint256[8] calldata proof
     ) external {
         if (recipients.length == 0 || recipients.length != amounts.length) revert PayoutMismatch();
+        // A proof is a bearer instrument until its nullifier is spent. The
+        // deadline is how a payer stops one that never landed — dropped by a
+        // relayer, censored, or held back — from being someone else's to submit
+        // months later against a route that has since changed hands.
+        if (block.timestamp > deadline) revert Expired(deadline, block.timestamp);
         if (!isKnownRoot(root)) revert UnknownRoot();
         if (spent[nullifierHash]) revert AlreadySpent();
 
         uint256 total;
         for (uint256 i = 0; i < amounts.length; i++) {
             total += amounts[i];
+            if (registry.activeNodes(recipients[i]) == 0) revert NotANode(recipients[i]);
         }
         // A partial spend would leave change the pool cannot represent, and an
         // over-spend would pay out of someone else's deposit.
         if (total != denomination) revert PayoutNotDenomination(total, denomination);
 
-        uint256 payout = _payoutHash(recipients, amounts);
+        uint256 payout = _payoutHash(deadline, recipients, amounts);
         if (!verifier.verify(proof, [root, nullifierHash, payout])) revert ProofRejected();
 
         spent[nullifierHash] = true;
@@ -171,21 +193,22 @@ contract FeePool {
     ///
     /// @dev Chain id and pool address are in the preimage so a proof cannot be
     /// replayed onto another chain or another pool holding the same note.
-    function payoutHash(address[] calldata recipients, uint256[] calldata amounts)
+    function payoutHash(uint256 deadline, address[] calldata recipients, uint256[] calldata amounts)
         external
         view
         returns (uint256)
     {
-        return _payoutHash(recipients, amounts);
+        return _payoutHash(deadline, recipients, amounts);
     }
 
-    function _payoutHash(address[] calldata recipients, uint256[] calldata amounts)
-        private
-        view
-        returns (uint256)
-    {
-        bytes memory data =
-            abi.encodePacked(block.chainid, uint256(uint160(address(this))), recipients.length);
+    function _payoutHash(
+        uint256 deadline,
+        address[] calldata recipients,
+        uint256[] calldata amounts
+    ) private view returns (uint256) {
+        bytes memory data = abi.encodePacked(
+            block.chainid, uint256(uint160(address(this))), deadline, recipients.length
+        );
         for (uint256 i = 0; i < recipients.length; i++) {
             data = abi.encodePacked(data, uint256(uint160(recipients[i])));
         }

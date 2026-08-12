@@ -248,6 +248,34 @@ contract NodeRegistryTest is Test {
         assertEq(nodes[1].key, bytes32(uint256(3)));
     }
 
+    function test_the_active_count_follows_what_the_snapshot_holds() public {
+        assertEq(registry.activeNodes(ALICE), 0);
+
+        _register(ALICE, bytes32(uint256(1)), "10.0.0.1:9000");
+        _register(ALICE, bytes32(uint256(2)), "10.0.0.2:9000");
+        assertEq(registry.activeNodes(ALICE), 2);
+
+        // Slashed below the minimum: out of the set, so out of the count.
+        vm.prank(ARBITER);
+        registry.slash(bytes32(uint256(1)), MIN_STAKE, "test");
+        assertEq(registry.activeNodes(ALICE), 1);
+
+        // And back in once the bond is topped up again.
+        vm.deal(ALICE, MIN_STAKE);
+        vm.prank(ALICE);
+        registry.addStake{value: MIN_STAKE}(bytes32(uint256(1)));
+        assertEq(registry.activeNodes(ALICE), 2);
+
+        vm.prank(ALICE);
+        registry.announceExit(bytes32(uint256(2)));
+        assertEq(registry.activeNodes(ALICE), 1, "leaving stops the count at once");
+
+        vm.warp(block.timestamp + UNBONDING + 1);
+        vm.prank(ALICE);
+        registry.withdraw(bytes32(uint256(2)));
+        assertEq(registry.activeNodes(ALICE), 1, "withdrawing does not double count the exit");
+    }
+
     function test_an_unregistered_key_is_not_a_node() public {
         assertFalse(registry.isActive(KEY));
         vm.expectRevert(abi.encodeWithSelector(NodeRegistry.NotRegistered.selector, KEY));

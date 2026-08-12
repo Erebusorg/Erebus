@@ -273,8 +273,11 @@ Binding a payment to a packet is the harder problem — a fee that identified th
 route of a known packet would reintroduce the link the mixnet exists to break —
 and it is not solved here.
 
-Also unresolved: the pool does not yet require recipients to be nodes registered
-in `NodeRegistry`, so an arbitrary address can be paid.
+The pool does require every recipient to be an operator running an active node in
+`NodeRegistry`, and every proof to carry a deadline it is bound to, so a spend
+cannot pay a stranger and an unsubmitted proof stops being usable. Neither check
+reaches the route: the registry says the payee is *a* node, not *your* node, and
+the deadline bounds a proof's shelf life rather than accounting for an epoch.
 
 ### 4.4 Trusted setup
 

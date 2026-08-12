@@ -53,6 +53,11 @@ enum Command {
         /// The pool's denomination in wei, split across the nodes.
         #[arg(long, default_value_t = 10_000_000_000_000_000)]
         denomination: u128,
+        /// Unix time after which the pool refuses this proof. A proof is a
+        /// bearer instrument until its nullifier is spent, so one that never
+        /// lands should stop being submittable rather than sit around.
+        #[arg(long)]
+        deadline: u64,
     },
     /// Writes the Solidity verifier for the current circuit.
     ExportVerifier {
@@ -113,6 +118,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             nodes,
             amounts,
             denomination,
+            deadline,
         } => {
             let note = Note::from_hex(&note)?;
             let tree = read_tree(&leaves)?;
@@ -127,7 +133,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 amounts
             };
 
-            let payout = payout_hash(chain_id, pool, &recipients, &amounts)?;
+            let payout = payout_hash(chain_id, pool, deadline, &recipients, &amounts)?;
             let (pk, vk) = setup()?;
             let spend = prove(&pk, &tree, &note, payout)?;
             verify(&vk, &spend)?;
@@ -184,6 +190,9 @@ fn field_or_fail(word: &[u8; 32]) -> Result<Fr, Box<dyn std::error::Error>> {
 const FIXTURE_CHAIN_ID: u64 = 31337;
 const FIXTURE_POOL: &str = "0x00000000000000000000000000000000000f0001";
 const FIXTURE_DENOMINATION: u128 = 10_000_000_000_000_000; // 0.01 ether
+/// Far enough out that the Solidity test never has to warp time to spend, and
+/// the expiry test can warp past it deliberately.
+const FIXTURE_DEADLINE: u64 = 4_000_000_000;
 
 fn fixture() -> Result<String, Box<dyn std::error::Error>> {
     let notes: Vec<Note> = (0..4).map(|_| Note::random()).collect();
@@ -198,7 +207,13 @@ fn fixture() -> Result<String, Box<dyn std::error::Error>> {
     ];
     let amounts = even_split(FIXTURE_DENOMINATION, recipients.len());
 
-    let payout = payout_hash(FIXTURE_CHAIN_ID, pool, &recipients, &amounts)?;
+    let payout = payout_hash(
+        FIXTURE_CHAIN_ID,
+        pool,
+        FIXTURE_DEADLINE,
+        &recipients,
+        &amounts,
+    )?;
     let (pk, vk) = setup()?;
     let spend = prove(&pk, &tree, spent, payout)?;
     verify(&vk, &spend)?;
@@ -210,6 +225,7 @@ fn fixture() -> Result<String, Box<dyn std::error::Error>> {
         "chainId": FIXTURE_CHAIN_ID,
         "pool": FIXTURE_POOL,
         "denomination": FIXTURE_DENOMINATION.to_string(),
+        "deadline": FIXTURE_DEADLINE.to_string(),
         "commitments": commitments,
         "spentIndex": 2,
         "recipients": recipients.iter().map(|r| format!("0x{}", hex::encode(r))).collect::<Vec<_>>(),

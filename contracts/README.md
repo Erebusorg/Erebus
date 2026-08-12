@@ -36,14 +36,15 @@ prover's, and the pool credits the node operators the proof names.
 | | |
 | --- | --- |
 | `deposit(commitment)` | Takes exactly `denomination` and appends the commitment to a depth-20 tree. One amount only: a distinctive deposit is a fingerprint no later layer can remove. |
-| `spend(root, nullifierHash, recipients, amounts, proof)` | Anyone may submit. The root must be one of the last 30, the nullifier must be unspent, and the amounts must total exactly one denomination. |
+| `spend(root, nullifierHash, deadline, recipients, amounts, proof)` | Anyone may submit, until `deadline`. The root must be one of the last 30, the nullifier must be unspent, the amounts must total exactly one denomination, and every recipient must be an operator with an active node in `NodeRegistry`. |
 | `claim()` | A paid operator withdraws. Crediting rather than transferring means a recipient that reverts cannot block a spend, and the claim is a separate transaction with no timing relationship to anything. |
-| `payoutHash(recipients, amounts)` | What the proof is bound to: `chainid`, this pool, the recipients, the amounts. A proof lifted from the mempool cannot be redirected, and one from another deployment or chain does not verify. |
+| `payoutHash(deadline, recipients, amounts)` | What the proof is bound to: `chainid`, this pool, the deadline, the recipients, the amounts. A proof lifted from the mempool cannot be redirected or stretched to a later deadline, and one from another deployment or chain does not verify. |
 
 `SpendVerifier.sol` is generated, not written:
 
 ```bash
-cargo run --release -p erebus-fees -- export-verifier   # from the repo root
+# from the repo root: the cargo workspace is mixnet/, the output path is not
+cargo run --release --manifest-path mixnet/Cargo.toml -p erebus-fees -- export-verifier
 cd contracts && forge fmt
 ```
 
@@ -52,8 +53,13 @@ so that anyone can regenerate the verifier and check it matches the circuit —
 which also means anyone can forge a proof and drain the pool. Real value needs a
 multi-party ceremony, or a proof system with no trusted setup.
 
-The pool also does not check that recipients are registered nodes: today it will
-pay any address the proof names.
+The registry check is on the operator, not on the route: it says the payee runs a
+node the network is currently selecting, not that this payee carried these
+packets. A payer can still direct a spend at any three active operators.
+
+The deadline is a plain timestamp the payer chooses and the proof commits to. It
+bounds how long an unsubmitted proof stays usable; it is not an epoch accounting
+scheme, and it does not rate-limit anything.
 
 ## Checks
 

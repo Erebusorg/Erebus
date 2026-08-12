@@ -137,16 +137,20 @@ commitment to a secret note; later, anyone — you, or a relayer who knows nothi
 about you — submits a zero-knowledge proof that _some_ unspent note in the pool
 is theirs to spend, and the pool credits the three node operators named in the
 proof. The proof publishes a nullifier hash, so a note spends once, and it is
-bound to the chain, the pool, the recipients, and the amounts, so it cannot be
-redirected or replayed anywhere.
+bound to the chain, the pool, the deadline, the recipients, and the amounts, so
+it cannot be redirected, stretched to a later time, or replayed anywhere. The
+pool pays only operators who run a node the network is currently routing through,
+which it asks the registry.
 
 ```bash
+cd mixnet
+
 # a note, and the commitment to deposit for it
 cargo run --release -p erebus-fees -- new-note
 
 # the whole thing on a local chain: registry, pool, three nodes, a request,
 # a deposit from one account, a spend submitted by another, and the payouts
-cd mixnet && ./scripts/paid-round.sh
+./scripts/paid-round.sh
 ```
 
 What this does **not** do: it pays nodes, not packets. Nothing proves a node

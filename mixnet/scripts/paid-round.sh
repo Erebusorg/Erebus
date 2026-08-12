@@ -69,7 +69,7 @@ REGISTRY="$(deploy ../contracts/src/NodeRegistry.sol:NodeRegistry \
   --constructor-args "$MIN_STAKE" 604800 "$EPOCH" "$DEPLOYER" "$DEPLOYER")"
 VERIFIER="$(deploy ../contracts/src/SpendVerifier.sol:SpendVerifier)"
 POOL="$(deploy ../contracts/src/FeePool.sol:FeePool \
-  --constructor-args "$DENOMINATION" "$VERIFIER")"
+  --constructor-args "$DENOMINATION" "$VERIFIER" "$REGISTRY")"
 [[ -n "$REGISTRY" && -n "$VERIFIER" && -n "$POOL" ]] || { echo "deployment failed" >&2; exit 1; }
 echo "  NodeRegistry  $REGISTRY"
 echo "  SpendVerifier $VERIFIER"
@@ -130,8 +130,12 @@ echo "  $PAYEES"
 
 echo
 echo "proving the spend"
+# The proof stops being submittable an hour from now, so one that never lands is
+# not left lying around for someone else to use later.
+DEADLINE=$(( $(cast block latest --field timestamp --rpc-url "$RPC") + 3600 ))
 SPEND="$("$FEES" spend --note "$NOTE" --leaves "$WORK/leaves.json" \
-  --pool "$POOL" --chain-id "$CHAIN_ID" --nodes "$PAYEES" --denomination "$DENOMINATION")"
+  --pool "$POOL" --chain-id "$CHAIN_ID" --nodes "$PAYEES" \
+  --denomination "$DENOMINATION" --deadline "$DEADLINE")"
 echo "$SPEND"
 ROOT="$(awk '/^root/ {print $2}' <<<"$SPEND")"
 NULLIFIER="$(awk '/^nullifierHash/ {print $2}' <<<"$SPEND")"
@@ -140,8 +144,8 @@ PROOF="$(awk '/^proof/ {print $2}' <<<"$SPEND")"
 
 echo
 echo "submitting it from an account that never touched the pool"
-cast send "$POOL" "spend(uint256,uint256,address[],uint256[],uint256[8])" \
-  "$ROOT" "$NULLIFIER" "[$PAYEES]" "$AMOUNTS" "$PROOF" \
+cast send "$POOL" "spend(uint256,uint256,uint256,address[],uint256[],uint256[8])" \
+  "$ROOT" "$NULLIFIER" "$DEADLINE" "[$PAYEES]" "$AMOUNTS" "$PROOF" \
   --rpc-url "$RPC" --private-key "$RELAYER_KEY" >/dev/null
 
 echo
