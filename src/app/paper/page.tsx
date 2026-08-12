@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { Mark } from "@/components/mark";
-import { Prose } from "@/components/prose";
-import { loadMarkdown } from "@/lib/content";
+import { MarkdownPage } from "@/components/markdown-page";
 
 export const metadata: Metadata = {
   title: "Erebus — Network-Layer Privacy for Tokenized Finance",
@@ -9,29 +7,14 @@ export const metadata: Metadata = {
     "Specification of the Erebus mixnet: Sphinx packets, continuous Poisson mixing, shielded fee payment, on-chain node registry, threat model, and limitations.",
 };
 
-export default async function PaperPage() {
-  const body = await loadMarkdown("whitepaper");
-
+export default function PaperPage() {
   return (
-    <article className="mx-auto max-w-3xl px-6 py-20 sm:py-28">
-      <header className="border-b border-line pb-10">
-        <div className="flex items-center gap-3">
-          <Mark size={22} className="text-accent" />
-          <p className="font-mono text-[11px] tracking-[0.24em] uppercase text-accent">
-            Draft 0.1
-          </p>
-        </div>
-        <h1 className="mt-6 text-3xl leading-tight tracking-[-0.02em] sm:text-5xl">
-          Erebus: Network-Layer Privacy for Tokenized Finance
-        </h1>
-        <p className="mt-5 text-[15px] text-muted">
-          A Sphinx mixnet with shielded fee payment for Robinhood Chain
-        </p>
-      </header>
-
-      <div className="mt-14">
-        <Prose>{body}</Prose>
-      </div>
-    </article>
+    <MarkdownPage
+      slug="whitepaper"
+      eyebrow="Draft 0.1"
+      title="Erebus: Network-Layer Privacy for Tokenized Finance"
+    >
+      A Sphinx mixnet with shielded fee payment for Robinhood Chain
+    </MarkdownPage>
   );
 }

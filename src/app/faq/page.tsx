@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = {
   title: "FAQ — Erebus",
@@ -53,21 +54,13 @@ const faqs = [
 export default function FaqPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-20 sm:py-28">
-      <header className="border-b border-line pb-10">
-        <p className="font-mono text-[11px] tracking-[0.24em] uppercase text-accent">
-          FAQ
-        </p>
-        <h1 className="mt-6 text-3xl leading-tight tracking-[-0.02em] sm:text-5xl">
-          Questions, answered plainly
-        </h1>
-        <p className="mt-5 text-[15px] text-muted">
-          Including the ones with unflattering answers. The{" "}
-          <Link href="/paper" className="text-accent">
-            paper
-          </Link>{" "}
-          has the long form.
-        </p>
-      </header>
+      <PageHeader eyebrow="FAQ" title="Questions, answered plainly">
+        Including the ones with unflattering answers. The{" "}
+        <Link href="/paper" className="text-accent">
+          paper
+        </Link>{" "}
+        has the long form.
+      </PageHeader>
 
       <dl className="mt-6">
         {faqs.map((f) => (
