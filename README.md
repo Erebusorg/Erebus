@@ -61,10 +61,14 @@ reads that registry directly:
 | `SpendVerifier` | [`0x53f1a479D2a56548A87d5EE7D647BD73ECE80B73`](https://explorer.testnet.chain.robinhood.com/address/0x53f1a479D2a56548A87d5EE7D647BD73ECE80B73) |
 | `FeePool` | [`0x7e4E497aa102FdE094431F81BEFec6652A98b799`](https://explorer.testnet.chain.robinhood.com/address/0x7e4E497aa102FdE094431F81BEFec6652A98b799) |
 
+Three nodes are staked into that registry and have been paid out of that pool by
+a spend the chain cannot trace to its payer — `mixnet/scripts/testnet-round.sh`
+is the round that did it. Their endpoints are loopback, because they run on the
+machine that ran the script: real chain, real bonds, one machine, and not a
+public fleet.
+
 Testnet only, and the pool takes test value only: the spend circuit's setup seed
-is public, so anyone can forge a proof against that verifier. No public node
-fleet is running — the mixnet itself still runs against a devnet you start
-yourself.
+is public, so anyone can forge a proof against that verifier.
 
 | Piece | State |
 | --- | --- |
@@ -76,11 +80,12 @@ yourself.
 | Registry contract: staking, unbonding, slashing, epoch seeds | done — [`contracts/`](contracts/) |
 | Nodes, client, and gateway reading the node set off chain | done — [`mixnet/crates/chain`](mixnet/crates/chain) |
 | Shielded fee pool: notes, nullifiers, Groth16 spend proof | done, unsafe setup — [`contracts/src/FeePool.sol`](contracts/src/FeePool.sol), [`mixnet/crates/fees`](mixnet/crates/fees) |
-| Paying the nodes of a route without naming the payer | done — `mixnet/scripts/paid-round.sh` |
+| Paying the nodes of a route without naming the payer | done — `mixnet/scripts/paid-round.sh`, and on testnet `mixnet/scripts/testnet-round.sh` |
 | Payouts restricted to active registered operators, proofs that expire | done |
 | Trusted setup ceremony for the spend circuit | not started |
 | Paying per packet, and nodes that check a fee before forwarding | not started |
 | Contracts deployed and verified on Robinhood Chain testnet | done — chain 46630 |
+| Nodes staked, routed, and paid against those live contracts | done — loopback endpoints, one machine |
 | Public fleet, audit, mainnet, token | none |
 
 ## The site

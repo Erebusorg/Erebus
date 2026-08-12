@@ -100,6 +100,21 @@ way to tell whose deposit paid them (needs `jq` as well):
 The proving keys come from a public seed, so the pool is safe to test with and
 unsafe to hold value — see [`../contracts`](../contracts).
 
+The same round against the contracts already deployed on Robinhood Chain testnet,
+which is where the set on <https://erebusorg.com/network> comes from. It needs a
+funded key (about 0.008 testnet ETH from the
+[faucet](https://faucet.testnet.chain.robinhood.com)) and generates everything
+else — one key per operator, a payer, a relayer — so no account both stakes and
+is paid:
+
+```bash
+FUNDER_KEY=0x… ./scripts/testnet-round.sh
+```
+
+Running it twice does not stake twice; nodes already active are left alone. The
+endpoints it registers are loopback, because the nodes are on the machine that
+ran the script: real money, real chain, and not a network.
+
 Layer assignment and path selection derive from public data only, so a client
 reading the contract needs no account, signs nothing, and cannot be handed a
 different node set than anyone else — which is the point: a directory that can
