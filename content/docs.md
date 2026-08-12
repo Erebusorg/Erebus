@@ -113,6 +113,8 @@ common except the packet size, which is the same for every packet.
 | `erebus-wire`     | Fixed-size framing between nodes                              |
 | `erebus-node`     | The mix node: peel, delay, forward, reject replays            |
 | `erebus-client`   | Requests, reply blocks, cover traffic, loop probes, demo sink |
+| `erebus-chain`    | Reads the node set and epoch seed off the registry contract   |
+| `erebus-fees`     | Fee notes, the spend circuit, proofs, the generated verifier  |
 
 ## Measure it
 
@@ -124,13 +126,45 @@ Prints the cost of building a packet, of one hop processing it, and of the
 replay tag. The numbers from this machine are on the
 [benchmarks](/benchmarks) page.
 
+## Paying the nodes without naming yourself
+
+A node that runs for free runs for someone else's reasons. But a fee that names
+the payer undoes the mixnet: "the addresses that paid a relay fee this epoch" is
+the anonymity set, and it is small.
+
+So fees go through a pool. You deposit one fixed amount together with a
+commitment to a secret note; later, anyone — you, or a relayer who knows nothing
+about you — submits a zero-knowledge proof that _some_ unspent note in the pool
+is theirs to spend, and the pool credits the three node operators named in the
+proof. The proof publishes a nullifier hash, so a note spends once, and it is
+bound to the chain, the pool, the recipients, and the amounts, so it cannot be
+redirected or replayed anywhere.
+
+```bash
+# a note, and the commitment to deposit for it
+cargo run --release -p erebus-fees -- new-note
+
+# the whole thing on a local chain: registry, pool, three nodes, a request,
+# a deposit from one account, a spend submitted by another, and the payouts
+cd mixnet && ./scripts/paid-round.sh
+```
+
+What this does **not** do: it pays nodes, not packets. Nothing proves a node
+carried your traffic, and no node checks a fee before forwarding — a credential
+that identified the route of a known packet would rebuild the link the mixnet
+exists to break. The [paper](/paper) says more about why that is the hard part.
+
+And the proving keys come from a public, reproducible seed, so the verifier can
+be rebuilt from the circuit and checked — which also means anyone can forge a
+proof. The pool is safe to test with and unsafe to hold money.
+
 ## Not built yet
 
-The registry contract is written and tested but deployed nowhere, so stake is
-real only on a chain you start yourself. Nobody is paid for running a node, the
-decision to slash is still a human one made off chain, and there is no key
-rotation and no node-originated cover traffic. Fees are not shielded, and no
-public network is running. A browser can already use all of
+The registry and the fee pool are written and tested but deployed nowhere, so
+stake and fees are real only on a chain you start yourself. There is no trusted
+setup ceremony, the decision to slash is still a human one made off chain, and
+there is no key rotation and no node-originated cover traffic. No public network
+is running. A browser can already use all of
 this — see the [SDK](/sdk) — but only against a devnet you start yourself. The
 [paper](/paper) states which of these are engineering work and which are open
 problems.

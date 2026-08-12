@@ -220,42 +220,77 @@ epoch".
 
 ### 4.2 Construction
 
-Erebus maintains a **ZK-UTXO pool**: an append-only commitment tree of depth 32
-(≈4.3 × 10⁹ leaves) over notes.
+Erebus maintains a **shielded fee pool**: an append-only commitment tree over
+fixed-denomination notes. The first implementation (`contracts/FeePool.sol`,
+`mixnet/crates/fees/`) uses a depth-20 tree, a MiMC hash over the BN254 scalar
+field, and a Groth16 spend proof.
 
 ```
-note        = ( value , asset , owner_pk , blinding )
-commitment  = H( value ‖ asset ‖ owner_pk ‖ blinding )
-nullifier   = H( note_sk ‖ leaf_index )
+note        = ( nullifier , secret )
+commitment  = H( nullifier ‖ secret )
+nullifier_h = H( nullifier ‖ 1 )
 ```
 
 A spend proves, in zero knowledge:
 
 1. **Membership** — the commitment is a leaf of the tree under a root the
-   contract accepts (current or recently retired).
-2. **Ownership** — the prover knows the spending key for that note.
-3. **Balance** — inputs equal outputs plus the declared fee, over the field, with
-   range checks preventing wraparound.
-4. **Nullifier correctness** — the published nullifier is correctly derived, so
-   double-spends are detectable without revealing which note was spent.
+   contract accepts (current or recently retired; the pool keeps 30 roots).
+2. **Ownership** — the prover knows the note's opening, `nullifier` and `secret`.
+3. **Nullifier correctness** — the published nullifier hash is correctly derived,
+   so double-spends are detectable without revealing which note was spent.
+4. **Payout binding** — the proof commits to `H( chain_id ‖ pool ‖ recipients ‖
+   amounts )`, so it cannot be lifted off the mempool and redirected, replayed
+   against another deployment, or replayed on another chain.
 
-The verifier contract checks the proof, marks the nullifier spent, inserts output
-commitments, and pays the declared fee to the exit node's shielded address. The
-public transaction shows a proof, a nullifier, and new commitments. It shows no
-sender, no recipient, and no amount.
+The contract checks the proof, marks the nullifier spent, and credits the named
+node operators, who withdraw separately. Crediting rather than transferring is
+deliberate: a node that reverts on payment must not be able to block a spend, and
+the claim is a second transaction with no timing relationship to the packet it
+paid for. The public transaction shows a proof, a nullifier hash, and three
+recipients. It shows no depositor and no link to any deposit.
 
-**Denominations.** Deposits are constrained to fixed denominations. Arbitrary
-deposit amounts are a fingerprint that survives every layer of the system: a
-deposit of 3.14159 ETH matched against a later withdrawal of the same value
-requires no cryptanalysis at all.
+**What the split says.** Amounts are equal across the hops of a route and the
+whole denomination is spent at once, so the payout is one of a small number of
+indistinguishable shapes. A per-payer split would be a fingerprint that survives
+every other layer.
 
-### 4.3 Proving cost
+**Anonymity set.** A spend is anonymous among the pool's unspent deposits, and
+nothing more. A pool with two deposits hides nothing, which is why the fee is a
+fixed denomination rather than metered per packet: metering would put the payer's
+traffic volume on chain.
 
-Proving happens client-side, in the browser, with a WASM prover. The target is
-sub-three-second proving on a mid-range laptop for the standard 2-in/2-out
-circuit; a mobile client offloads to a user-selected proving service using a
-blinded witness, at a stated privacy cost that the client surfaces explicitly
-rather than silently.
+Arbitrary deposit amounts would be a fingerprint that survives every layer of the
+system: a deposit of 3.14159 ETH matched against a later withdrawal of the same
+value requires no cryptanalysis at all. The pool therefore accepts exactly one
+amount and reverts on anything else.
+
+### 4.3 What is not paid for yet
+
+The pool pays *nodes*, not *packets*. A spend names the three operators of a
+route drawn from the registry and pays them; it does not prove that those nodes
+carried any particular packet, and no node checks a credential before forwarding.
+Binding a payment to a packet is the harder problem — a fee that identified the
+route of a known packet would reintroduce the link the mixnet exists to break —
+and it is not solved here.
+
+Also unresolved: the pool does not yet require recipients to be nodes registered
+in `NodeRegistry`, so an arbitrary address can be paid.
+
+### 4.4 Trusted setup
+
+Groth16 needs a per-circuit setup, and the setup randomness is a trapdoor: whoever
+holds it can forge proofs and drain the pool. The current keys are derived from a
+**public, reproducible seed** so that anyone can rebuild the verifier from the
+circuit and check that it matches. That makes the deployed artifacts auditable and
+the pool unsafe to hold real value. A production deployment needs a multi-party
+ceremony, or a proof system with no trusted setup.
+
+### 4.5 Proving cost
+
+Proving happens client-side. Today it is a native binary (`erebus-fees`); in the
+browser the target is sub-three-second proving on a mid-range laptop. A mobile
+client offloads to a user-selected proving service using a blinded witness, at a
+stated privacy cost that the client surfaces explicitly rather than silently.
 
 ## 5. Node registry and incentives
 
@@ -356,9 +391,9 @@ separately versioned component. We do not claim what is not built.
                         │ JSON-RPC
 ┌───────────────────────▼─────────────────────────────────┐
 │ Robinhood Chain                                         │
-│  Registry.sol   — stake, keys, endpoints, slashing      │
-│  ShieldedPool.sol — commitments, nullifiers, root       │
-│  Verifier.sol   — proof verification                    │
+│  NodeRegistry.sol  — stake, keys, endpoints, slashing   │
+│  FeePool.sol       — commitments, nullifiers, roots     │
+│  SpendVerifier.sol — Groth16 proof verification         │
 │  Adaptor.sol    — atomic verify + venue execution       │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -424,7 +459,7 @@ backdoor and no protocol-level decryption quorum.
 | 1 | Sphinx implementation, 3-node local network, CLI client | Implemented in `mixnet/` |
 | 2 | Registry contract, staking, public testnet fleet, live map | Planned |
 | 3 | WASM SDK, EIP-1193 provider, mixnet-routed reads | Implemented in `sdk/`, against a local devnet |
-| 4 | Shielded pool, fee circuit, audited verifier | Planned |
+| 4 | Shielded fee pool, spend circuit, generated verifier | Implemented in `contracts/` and `mixnet/crates/fees/`, on a reproducible (unsafe) setup |
 | 5 | PIR component for tree-shaped datasets | Research |
 | 6 | Incentivized testnet, external audit, mainnet | Planned |
 

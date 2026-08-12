@@ -10,6 +10,7 @@ members = [
     "crates/sdk",
     "crates/gateway",
     "crates/chain",
+    "crates/fees",
 ]
 
 [workspace.package]
@@ -20,6 +21,7 @@ repository = "https://github.com/AlexKarys/erebus"
 
 [workspace.dependencies]
 erebus-chain = { path = "crates/chain" }
+erebus-fees = { path = "crates/fees" }
 erebus-envelope = { path = "crates/envelope" }
 erebus-sphinx = { path = "crates/sphinx" }
 erebus-topology = { path = "crates/topology" }

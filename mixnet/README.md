@@ -22,6 +22,7 @@ submit a signed transaction without the endpoint learning who asked.
 | `erebus-sdk` | The client core with no sockets and no filesystem, so it compiles to WebAssembly. |
 | `erebus-gateway` | Carries packets between a browser and the mixnet, without being able to read them. |
 | `erebus-chain` | Reads the node set and epoch seed from the registry contract, over one `eth_call`. |
+| `erebus-fees` | Fee notes, the commitment tree, the Groth16 spend circuit, and the Solidity verifier it generates. |
 
 ## Run a local network
 
@@ -88,6 +89,17 @@ reads the set back off it (needs [foundry](https://getfoundry.sh)):
 ./scripts/chain-devnet.sh
 ```
 
+And the same thing paid for: a shielded fee pool, a note funded by one account, a
+spend submitted by another, and three node operators who end up with money and no
+way to tell whose deposit paid them (needs `jq` as well):
+
+```bash
+./scripts/paid-round.sh
+```
+
+The proving keys come from a public seed, so the pool is safe to test with and
+unsafe to hold value — see [`../contracts`](../contracts).
+
 Layer assignment and path selection derive from public data only, so a client
 reading the contract needs no account, signs nothing, and cannot be handed a
 different node set than anyone else — which is the point: a directory that can
@@ -118,8 +130,12 @@ cargo fmt --all --check
 - **Replay window.** Tags are held in memory and dropped in bulk when the window
   fills. Correct only because node keys are meant to rotate per epoch, which the
   node does not yet do.
-- **Stake is recorded, not yet earned back.** The registry bonds a node and can
-  slash it, but there are no fees or rewards, so honest operation costs money.
+- **Fees pay nodes, not packets.** A spend from `FeePool` pays the operators of a
+  route drawn from the registry. Nothing proves those nodes carried anything, and
+  no node checks a fee before forwarding: a credential that identified the route
+  of a known packet would rebuild the link the mixnet exists to break.
+- **The spend circuit's setup is reproducible.** Anyone can regenerate the keys,
+  which makes the verifier auditable and the pool forgeable. Test money only.
 - **Slashing is a judgement, not a proof.** The contract records a decision the
   arbiter made off chain. What a mixnet can actually measure — probes that never
   return — is statistical, and the registry does not pretend otherwise.

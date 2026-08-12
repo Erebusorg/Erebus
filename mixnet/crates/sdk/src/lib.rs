@@ -308,6 +308,7 @@ mod tests {
                     id: encode_id(&key.public().to_bytes()),
                     address: format!("127.0.0.1:{}", 9000 + i),
                     stake: 1,
+                    payout: None,
                 })
                 .collect(),
         };

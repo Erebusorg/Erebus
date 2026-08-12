@@ -66,10 +66,10 @@ export default function NetworkPage() {
           <Link href="/docs" className="text-accent">
             docs
           </Link>
-          . The registry contract nodes stake in is written and tested, and the
-          node daemon already reads its set off a chain — but it is deployed
-          nowhere, so the counts below stay empty. A node list nobody can verify
-          is worth nothing.
+          . The registry nodes stake in and the pool that pays them are written
+          and tested, and the node daemon already reads its set off a chain — but
+          neither is deployed anywhere, so the counts below stay empty. A node
+          list nobody can verify is worth nothing.
         </p>
       </header>
 
@@ -152,8 +152,10 @@ export default function NetworkPage() {
             to edit. Written and tested; not deployed.
           </li>
           <li>
-            A reason to run a node: the contract can take stake away, but nothing
-            pays it back, so today an honest operator is out of pocket.
+            A reason to run a node. The shielded fee pool now pays the operators
+            of a route without naming the payer, but on a trusted setup anyone
+            can reproduce — auditable, and unsafe for real money until a
+            multi-party ceremony replaces it.
           </li>
           <li>
             Slashing driven by evidence rather than by an arbiter address, so a

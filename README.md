@@ -47,9 +47,10 @@ colluding to change that.
 The transport layer is implemented, and a browser can now use it: the client
 compiles to WebAssembly and an EIP-1193 provider sends Ethereum JSON-RPC through
 three hops. The node set can come from a registry contract instead of a file the
-participants have to trust each other about. The shielded fee pool is not built,
-and no public network is running — everything runs against a devnet you start
-yourself.
+participants have to trust each other about. Nodes can be paid from a shielded
+fee pool, so a payment does not name the payer — on a trusted setup that is
+reproducible and therefore unsafe for real value. No public network is running;
+everything runs against a devnet you start yourself.
 
 | Piece | State |
 | --- | --- |
@@ -60,8 +61,10 @@ yourself.
 | Browser gateway, JSON-RPC exit with a method allowlist | done |
 | Registry contract: staking, unbonding, slashing, epoch seeds | done — [`contracts/`](contracts/) |
 | Nodes, client, and gateway reading the node set off chain | done — [`mixnet/crates/chain`](mixnet/crates/chain) |
-| Fees or rewards for running a node | not started |
-| Shielded fee payment (ZK) | not started |
+| Shielded fee pool: notes, nullifiers, Groth16 spend proof | done, unsafe setup — [`contracts/src/FeePool.sol`](contracts/src/FeePool.sol), [`mixnet/crates/fees`](mixnet/crates/fees) |
+| Paying the nodes of a route without naming the payer | done — `mixnet/scripts/paid-round.sh` |
+| Trusted setup ceremony for the spend circuit | not started |
+| Paying per packet, and nodes that check a fee before forwarding | not started |
 | Public fleet, audit, mainnet, token | none |
 
 ## The site

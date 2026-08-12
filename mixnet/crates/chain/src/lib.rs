@@ -137,6 +137,10 @@ fn registry_from(output: &[u8]) -> Result<Registry, ChainError> {
             id: hex(node.key.as_slice()),
             address: node.endpoint.clone(),
             stake: u128::try_from(node.stake).unwrap_or(u128::MAX),
+            // The operator is where a shielded fee spend sends this node's
+            // share. It is already public in the registry, so carrying it costs
+            // nothing: what a payout hides is the payer, not the payee.
+            payout: (!node.operator.is_zero()).then(|| node.operator.to_string()),
         })
         .collect();
 
@@ -178,7 +182,7 @@ mod tests {
             key: FixedBytes::from([key; 32]),
             endpoint: endpoint.to_string(),
             stake: U256::from(stake),
-            operator: Address::ZERO,
+            operator: Address::from([key; 20]),
             withdrawableAt: 0,
         }
     }
@@ -209,6 +213,19 @@ mod tests {
         assert_eq!(registry.nodes[1].stake, 2_000);
         // The node ids are the ids the Sphinx layer uses, unchanged.
         assert_eq!(registry.nodes[0].id_bytes().expect("an id"), [1u8; 32]);
+        assert_eq!(
+            registry.nodes[0].payout.as_deref(),
+            Some(Address::from([1u8; 20]).to_string().as_str()),
+            "the operator carries through as the fee payout address"
+        );
+    }
+
+    #[test]
+    fn a_node_with_no_operator_has_no_payout_address() {
+        let mut zeroed = node(1, "203.0.113.7:9000", 1_000);
+        zeroed.operator = Address::ZERO;
+        let registry = decoded(&encoded(1, [0; 32], vec![zeroed]));
+        assert!(registry.nodes[0].payout.is_none());
     }
 
     /// Two epochs must not derive the same layers, even from the same seed

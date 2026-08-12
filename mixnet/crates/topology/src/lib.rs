@@ -30,6 +30,8 @@ pub enum TopologyError {
     EmptyLayer { layer: usize },
     #[error("no node registered with id {0}")]
     UnknownNode(String),
+    #[error("node {0} has no payout address, so it cannot be paid")]
+    NoPayout(String),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -41,6 +43,10 @@ pub struct NodeRecord {
     /// Stake, in the smallest unit. Only meaningful once the registry is on chain.
     #[serde(default)]
     pub stake: u128,
+    /// Where fees for this node are paid: the operator address from the
+    /// registry. Absent for a registry file that predates shielded fees.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub payout: Option<String>,
 }
 
 impl NodeRecord {
@@ -75,6 +81,25 @@ impl Registry {
         self.find(id)
             .map(|n| n.address.clone())
             .ok_or_else(|| TopologyError::UnknownNode(encode_id(id)))
+    }
+
+    /// The payout addresses of the nodes on a path, in hop order.
+    ///
+    /// This is what a payer spends a fee note on. It names the three operators
+    /// that carried a route, not the route: the amounts are equal and the
+    /// addresses are public, so the payout says which nodes were used and
+    /// nothing about by whom or for what.
+    pub fn payees(&self, path: &[PathHop]) -> Result<Vec<String>, TopologyError> {
+        path.iter()
+            .map(|hop| {
+                let node = self
+                    .find(&hop.id)
+                    .ok_or_else(|| TopologyError::UnknownNode(encode_id(&hop.id)))?;
+                node.payout
+                    .clone()
+                    .ok_or_else(|| TopologyError::NoPayout(node.id.clone()))
+            })
+            .collect()
     }
 
     /// Partitions the node set into layers.
@@ -215,6 +240,7 @@ mod tests {
                     id: encode_id(&[i as u8 + 1; 32]),
                     address: format!("127.0.0.1:{}", 9000 + i),
                     stake: 1,
+                    payout: Some(format!("0x{:040x}", i + 1)),
                 })
                 .collect(),
         }
@@ -281,6 +307,29 @@ mod tests {
         assert!((mean - 50.0).abs() < 5.0, "mean was {mean}");
         assert!(samples.iter().collect::<HashSet<_>>().len() > 50);
         assert_eq!(exponential_delay(&mut rng, 0.0), 0);
+    }
+
+    #[test]
+    fn a_path_names_the_operators_that_get_paid() {
+        let reg = registry(9, "epoch-1");
+        let mut rng = ChaCha8Rng::seed_from_u64(5);
+        let path = reg.select_path(&mut rng, 30.0).unwrap();
+
+        let payees = reg.payees(&path).unwrap();
+        assert_eq!(payees.len(), LAYERS);
+        assert!(payees.iter().all(|p| p.starts_with("0x")));
+    }
+
+    #[test]
+    fn a_node_with_no_payout_address_cannot_be_paid() {
+        let mut reg = registry(9, "epoch-1");
+        for node in &mut reg.nodes {
+            node.payout = None;
+        }
+        let mut rng = ChaCha8Rng::seed_from_u64(5);
+        let path = reg.select_path(&mut rng, 30.0).unwrap();
+
+        assert!(matches!(reg.payees(&path), Err(TopologyError::NoPayout(_))));
     }
 
     #[test]
