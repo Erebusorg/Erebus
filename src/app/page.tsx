@@ -155,7 +155,7 @@ export default function Home() {
             </Link>
             <span className="text-muted">
               {" "}
-              — no public fleet is running yet, and why.
+              — the registry on Robinhood Chain testnet, read live.
             </span>
           </p>
         </Reveal>

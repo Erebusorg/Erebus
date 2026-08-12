@@ -69,6 +69,21 @@ forge test
 forge fmt --check
 ```
 
+## Deployed
+
+Robinhood Chain testnet, chain 46630, all three verified on the explorer:
+
+| Contract | Address |
+| --- | --- |
+| `NodeRegistry` | [`0x1afa15F03e8d4f656374864750E0b62CCB6C8ad7`](https://explorer.testnet.chain.robinhood.com/address/0x1afa15F03e8d4f656374864750E0b62CCB6C8ad7) |
+| `SpendVerifier` | [`0x53f1a479D2a56548A87d5EE7D647BD73ECE80B73`](https://explorer.testnet.chain.robinhood.com/address/0x53f1a479D2a56548A87d5EE7D647BD73ECE80B73) |
+| `FeePool` | [`0x7e4E497aa102FdE094431F81BEFec6652A98b799`](https://explorer.testnet.chain.robinhood.com/address/0x7e4E497aa102FdE094431F81BEFec6652A98b799) |
+
+`minStake` is 0.001 ETH, the unbonding period a week, an epoch an hour, and the
+fee denomination 0.001 ETH. Testnet only, and deliberately: the spend circuit's
+setup seed is public, so anyone can forge a proof and drain that pool. Do not
+send it value you want back.
+
 ## Deploy
 
 ```bash
