@@ -11,6 +11,7 @@ name = "erebus-node"
 path = "src/main.rs"
 
 [dependencies]
+erebus-chain.workspace = true
 erebus-sphinx.workspace = true
 erebus-topology.workspace = true
 erebus-wire.workspace = true

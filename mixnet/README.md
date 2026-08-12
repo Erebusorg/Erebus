@@ -21,6 +21,7 @@ submit a signed transaction without the endpoint learning who asked.
 | `erebus-envelope` | What a client puts inside a packet: requests, replies, probes. |
 | `erebus-sdk` | The client core with no sockets and no filesystem, so it compiles to WebAssembly. |
 | `erebus-gateway` | Carries packets between a browser and the mixnet, without being able to read them. |
+| `erebus-chain` | Reads the node set and epoch seed from the registry contract, over one `eth_call`. |
 
 ## Run a local network
 
@@ -57,9 +58,9 @@ chose — what the client's own network link sees anyway — and nothing more: i
 routes replies by the reply-block id a client registers, and drops frames nobody
 is waiting for.
 
-A registry is a JSON file. On chain it becomes a contract; the client code does
-not change, because layer assignment and path selection already derive from
-public data only.
+## Where the node set comes from
+
+A registry is a JSON file:
 
 ```json
 {
@@ -69,6 +70,28 @@ public data only.
   ]
 }
 ```
+
+…or the registry contract in [`../contracts`](../contracts). Every binary that
+needs the node set takes either, and nothing downstream of the read changes:
+
+```bash
+cargo run --bin erebus-node -- run --key node0.key --listen 127.0.0.1:9000 \
+  --chain-rpc https://rpc.testnet.robinhood.com --contract 0xREGISTRY
+cargo run --bin erebus-registry -- fetch --rpc $RPC --contract 0xREGISTRY
+```
+
+The whole thing against a chain, end to end — a local chain, a deployed
+registry, three nodes that stake and register themselves, and a client that
+reads the set back off it (needs [foundry](https://getfoundry.sh)):
+
+```bash
+./scripts/chain-devnet.sh
+```
+
+Layer assignment and path selection derive from public data only, so a client
+reading the contract needs no account, signs nothing, and cannot be handed a
+different node set than anyone else — which is the point: a directory that can
+tailor the set per client has partitioned the anonymity set without being caught.
 
 ## What a hop learns
 
@@ -95,9 +118,15 @@ cargo fmt --all --check
 - **Replay window.** Tags are held in memory and dropped in bulk when the window
   fills. Correct only because node keys are meant to rotate per epoch, which the
   node does not yet do.
-- **No registry contract.** The node set is a file that every participant is
-  trusted to have the same copy of.
-- **No stake, no slashing.** `stake` is carried and ignored.
+- **Stake is recorded, not yet earned back.** The registry bonds a node and can
+  slash it, but there are no fees or rewards, so honest operation costs money.
+- **Slashing is a judgement, not a proof.** The contract records a decision the
+  arbiter made off chain. What a mixnet can actually measure — probes that never
+  return — is statistical, and the registry does not pretend otherwise.
+- **The epoch seed is not unpredictable to whoever orders blocks.** It is a past
+  block hash, which stops an operator picking its own layer, not a sequencer.
+- **The node set is read, not watched.** A binary reads the registry at startup;
+  it does not yet follow the contract's events and re-derive layers mid-run.
 - **Cover traffic is client-side only.** Nodes do not yet originate loops of
   their own, so a network with few clients has little cover.
 - **The gateway is a chokepoint.** Every browser using one gateway is visible to

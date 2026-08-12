@@ -66,8 +66,10 @@ export default function NetworkPage() {
           <Link href="/docs" className="text-accent">
             docs
           </Link>
-          . The counts below stay empty until nodes are staked in a registry
-          contract, because a node list nobody can verify is worth nothing.
+          . The registry contract nodes stake in is written and tested, and the
+          node daemon already reads its set off a chain — but it is deployed
+          nowhere, so the counts below stay empty. A node list nobody can verify
+          is worth nothing.
         </p>
       </header>
 
@@ -145,12 +147,18 @@ export default function NetworkPage() {
         </h2>
         <ol className="mt-6 max-w-2xl list-decimal space-y-3 pl-5 text-[15px] leading-relaxed text-muted">
           <li>
-            A registry contract on Robinhood Chain holding each operator&apos;s
-            key, endpoint, and stake, so the node list is not ours to edit.
+            The registry contract deployed on Robinhood Chain, holding each
+            operator&apos;s key, endpoint, and bond, so the node list is not ours
+            to edit. Written and tested; not deployed.
           </li>
           <li>
-            Slashing, so a node that drops packets or ignores the delay it was
-            handed loses money rather than reputation.
+            A reason to run a node: the contract can take stake away, but nothing
+            pays it back, so today an honest operator is out of pocket.
+          </li>
+          <li>
+            Slashing driven by evidence rather than by an arbiter address, so a
+            node that drops packets or ignores the delay it was handed loses
+            money on proof rather than on judgement.
           </li>
           <li>
             Loop probes reported by independent clients, which is the only

@@ -270,6 +270,14 @@ Erebus publishes the node set on-chain. An operator registers by submitting a
 public key, a network endpoint, and a stake. Clients read the registry from the
 chain — or, once bootstrapped, through the mixnet itself.
 
+`NodeRegistry` is implemented and tested (`contracts/`), and the node daemon,
+client, and gateway read the set from it in one `eth_call`. Reading is not
+participation: a client needs no account, signs nothing, and pays nothing, and
+because everyone reads the same contract nobody can be handed a tailored node
+set. An operator that announces an exit stops being selected in that call
+immediately, while its bond stays slashable for the unbonding period, so leaving
+is not a way out of a penalty. It is deployed nowhere yet.
+
 ### 5.2 Deterministic layer assignment
 
 Layer assignment must be unpredictable in advance but identical across clients,
@@ -285,10 +293,19 @@ Every client derives the same assignment from public data. An operator cannot
 choose to sit in the exit layer, where the highest-value information is, and
 cannot know its next-epoch position early enough to prepare a targeted attack.
 
+The seed is a past block hash, recorded on the first transaction of each epoch, so
+it is unpredictable to operators but not to whoever orders blocks — on an L2, the
+sequencer. A sequencer able to grind block hashes could bias assignment; we state
+that rather than claim a randomness beacon the chain does not provide.
+
 ### 5.3 Sybil resistance and its limits
 
-Stake makes registration costly; slashing makes misbehavior costly. Loop probes
-provide the evidence: a node that drops packets, delays them outside its
+Stake makes registration costly; slashing makes misbehavior costly. What the
+contract implements today is the accounting — bonds, unbonding, and a slash with
+its reason on the record, decided by an arbiter address rather than by a proof —
+because the evidence a mixnet can produce is statistical, and automating the
+judgement would claim a certainty the protocol does not have. Loop probes
+provide that evidence: a node that drops packets, delays them outside its
 commanded distribution, or goes offline while advertising availability produces
 verifiable probe failures, and a quorum of failure reports triggers slashing.
 
