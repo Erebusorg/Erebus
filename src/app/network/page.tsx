@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHeader, SectionLabel } from "@/components/page-header";
 import { Topology } from "@/components/topology";
 import { chain, explorerAddress, formatEth, readNetwork } from "@/lib/chain";
 
@@ -63,50 +64,50 @@ export default async function NetworkPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-20 sm:py-28">
-      <header className="border-b border-line pb-10">
-        <p className="font-mono text-[11px] tracking-[0.24em] uppercase text-accent">
-          Network
-        </p>
-        <h1 className="mt-6 max-w-3xl text-3xl leading-tight tracking-[-0.02em] sm:text-5xl">
-          {live && live.nodes.length > 0
+      <PageHeader
+        eyebrow="Network"
+        title={
+          live && live.nodes.length > 0
             ? `${live.nodes.length} node${live.nodes.length === 1 ? "" : "s"} in the set`
-            : "The contracts are live; no node has staked in yet"}
-        </h1>
-        <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-muted">
-          The registry and the fee pool are deployed and verified on {chain.name}
-          , and everything below the fold is one <code>snapshot()</code> call
-          against the registry rather than a number we typed in. What is in that
-          set today is a demo: three nodes on one machine, staked and paid for
-          real, with loopback endpoints nobody else can route to. Read the
-          endpoints in the table and you can see that for yourself — which is the
-          point of putting the set on chain. A public fleet is a separate thing,
-          and it does not exist yet.
-        </p>
-        <div className="mt-8 grid gap-px bg-line sm:grid-cols-3">
-          {contracts.map((c) => (
-            <div key={c.name} className="bg-background p-5">
-              <p className="font-mono text-[11px] tracking-[0.18em] uppercase text-muted">
-                {c.name}
-              </p>
-              <a
-                href={explorerAddress(c.address)}
-                className="mt-2 block font-mono text-[13px] text-accent"
-              >
-                {short(c.address)}
-              </a>
+            : "The contracts are live; no node has staked in yet"
+        }
+        footer={
+          <>
+            <div className="mt-8 grid gap-px bg-line sm:grid-cols-3">
+              {contracts.map((c) => (
+                <div key={c.name} className="bg-background p-5">
+                  <p className="font-mono text-[11px] tracking-[0.18em] uppercase text-muted">
+                    {c.name}
+                  </p>
+                  <a
+                    href={explorerAddress(c.address)}
+                    className="mt-2 block font-mono text-[13px] text-accent"
+                  >
+                    {short(c.address)}
+                  </a>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <p className="mt-4 text-[13px] text-muted">
-          Chain {chain.id}, test value only: the spend circuit&apos;s trusted
-          setup is reproducible, so anyone can forge a proof against this pool.
-        </p>
-      </header>
+            <p className="mt-4 text-[13px] text-muted">
+              Chain {chain.id}, test value only: the spend circuit&apos;s
+              trusted setup is reproducible, so anyone can forge a proof against
+              this pool.
+            </p>
+          </>
+        }
+      >
+        The registry and the fee pool are deployed and verified on {chain.name},
+        and everything below the fold is one <code>snapshot()</code> call
+        against the registry rather than a number we typed in. What is in that
+        set today is a demo: three nodes on one machine, staked and paid for
+        real, with loopback endpoints nobody else can route to. Read the
+        endpoints in the table and you can see that for yourself — which is the
+        point of putting the set on chain. A public fleet is a separate thing,
+        and it does not exist yet.
+      </PageHeader>
 
       <section className="mt-16">
-        <h2 className="font-mono text-[11px] tracking-[0.24em] uppercase text-muted">
-          Read off chain
-        </h2>
+        <SectionLabel>Read off chain</SectionLabel>
         {live === null ? (
           <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-muted">
             The RPC did not answer, so there is nothing to show here rather than
@@ -202,9 +203,7 @@ export default async function NetworkPage() {
       </section>
 
       <section className="mt-16">
-        <h2 className="font-mono text-[11px] tracking-[0.24em] uppercase text-muted">
-          Layers
-        </h2>
+        <SectionLabel>Layers</SectionLabel>
         <div className="mt-6 overflow-x-auto">
           <table className="w-full border-collapse text-left text-[14px]">
             <thead>
@@ -238,9 +237,7 @@ export default async function NetworkPage() {
       </section>
 
       <section className="mt-16">
-        <h2 className="font-mono text-[11px] tracking-[0.24em] uppercase text-muted">
-          Protocol parameters
-        </h2>
+        <SectionLabel>Protocol parameters</SectionLabel>
         <div className="mt-6 grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-3">
           {parameters.map((p) => (
             <div key={p.k} className="bg-background p-6">
@@ -255,9 +252,7 @@ export default async function NetworkPage() {
       </section>
 
       <section className="mt-16">
-        <h2 className="font-mono text-[11px] tracking-[0.24em] uppercase text-muted">
-          Topology
-        </h2>
+        <SectionLabel>Topology</SectionLabel>
         <div className="mt-6 border border-line p-6 sm:p-10">
           <Topology />
         </div>
@@ -292,8 +287,8 @@ export default async function NetworkPage() {
           </li>
         </ol>
         <p className="mt-8 text-[13px] text-muted">
-          Treat the protocol parameters as constants, not measurements — only the
-          on-chain figures are read live. The measured ones live in the{" "}
+          Treat the protocol parameters as constants, not measurements — only
+          the on-chain figures are read live. The measured ones live in the{" "}
           <Link href="/benchmarks" className="text-accent">
             benchmarks
           </Link>

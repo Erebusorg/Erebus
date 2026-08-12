@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Mark } from "@/components/mark";
 import { MixnetBackdrop } from "@/components/mixnet-backdrop";
+import { SectionLabel } from "@/components/page-header";
 import { Reveal } from "@/components/reveal";
 import { Topology } from "@/components/topology";
 import { UseCases } from "@/components/use-cases";
@@ -250,9 +251,7 @@ function Section({
     <section id={id} className="scroll-mt-16 border-b border-line">
       <div className="mx-auto max-w-6xl px-6 py-24 sm:py-32">
         <div className="mb-14 flex items-baseline justify-between border-b border-line pb-4">
-          <h2 className="font-mono text-[11px] tracking-[0.24em] uppercase text-muted">
-            {label}
-          </h2>
+          <SectionLabel>{label}</SectionLabel>
           <span className="font-mono text-[11px] text-accent">{index}</span>
         </div>
         {children}

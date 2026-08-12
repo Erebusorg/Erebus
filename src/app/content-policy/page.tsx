@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHeader } from "@/components/page-header";
+import { TextBody, TextSection } from "@/components/text-section";
 
 export const metadata: Metadata = {
   title: "Content policy — Erebus",
@@ -10,21 +12,15 @@ export const metadata: Metadata = {
 export default function ContentPolicyPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-20 sm:py-28">
-      <header className="border-b border-line pb-10">
-        <p className="font-mono text-[11px] tracking-[0.24em] uppercase text-accent">
-          Content policy
-        </p>
-        <h1 className="mt-6 text-3xl leading-tight tracking-[-0.02em] sm:text-5xl">
-          The network cannot read what it carries
-        </h1>
-        <p className="mt-5 text-[15px] text-muted">
-          That is the design, and it decides what a policy can honestly promise.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Content policy"
+        title="The network cannot read what it carries"
+      >
+        That is the design, and it decides what a policy can honestly promise.
+      </PageHeader>
 
-      <div className="mt-12 space-y-10 text-[15px] leading-[1.75] text-foreground/85">
-        <section>
-          <h2 className="text-xl tracking-tight">What we can enforce</h2>
+      <TextBody>
+        <TextSection title="What we can enforce">
           <p className="mt-4">
             Entry and relay nodes see ciphertext and a next hop, so no rule
             about content is enforceable there without breaking the protocol.
@@ -39,10 +35,9 @@ export default function ContentPolicyPage() {
             that information is not retained anywhere: it never exists in one
             place to begin with.
           </p>
-        </section>
+        </TextSection>
 
-        <section>
-          <h2 className="text-xl tracking-tight">What we ask of users</h2>
+        <TextSection title="What we ask of users">
           <p className="mt-4">
             Do not use Erebus for anything unlawful where you are, and do not
             use it to attack the network it fronts: flooding a destination with
@@ -55,20 +50,18 @@ export default function ContentPolicyPage() {
             entered into is not, and the protocol makes no attempt to help with
             that.
           </p>
-        </section>
+        </TextSection>
 
-        <section>
-          <h2 className="text-xl tracking-tight">What we ask of operators</h2>
+        <TextSection title="What we ask of operators">
           <p className="mt-4">
             Publish your exit policy, do not log what you do not need, and do
             not attempt to strip layers you are not addressed by; a node that
             tampers with a packet is detected at the exit and, once staking
             exists, is slashed for it.
           </p>
-        </section>
+        </TextSection>
 
-        <section>
-          <h2 className="text-xl tracking-tight">Reports</h2>
+        <TextSection title="Reports">
           <p className="mt-4">
             Abuse and vulnerability reports go to the{" "}
             <a
@@ -94,8 +87,8 @@ export default function ContentPolicyPage() {
             </Link>{" "}
             is more useful than this page.
           </p>
-        </section>
-      </div>
+        </TextSection>
+      </TextBody>
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHeader } from "@/components/page-header";
+import { TextBody, TextSection } from "@/components/text-section";
 
 export const metadata: Metadata = {
   title: "Terms — Erebus",
@@ -10,22 +12,13 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-20 sm:py-28">
-      <header className="border-b border-line pb-10">
-        <p className="font-mono text-[11px] tracking-[0.24em] uppercase text-accent">
-          Terms
-        </p>
-        <h1 className="mt-6 text-3xl leading-tight tracking-[-0.02em] sm:text-5xl">
-          There is nothing here to sign up for
-        </h1>
-        <p className="mt-5 text-[15px] text-muted">
-          Erebus is source code and a website, not a service. These terms are
-          short because there is very little to agree to.
-        </p>
-      </header>
+      <PageHeader eyebrow="Terms" title="There is nothing here to sign up for">
+        Erebus is source code and a website, not a service. These terms are
+        short because there is very little to agree to.
+      </PageHeader>
 
-      <div className="mt-12 space-y-10 text-[15px] leading-[1.75] text-foreground/85">
-        <section>
-          <h2 className="text-xl tracking-tight">The software</h2>
+      <TextBody>
+        <TextSection title="The software">
           <p className="mt-4">
             The code is published under the licence in the repository, and that
             licence governs it. It is provided as is, without warranty of any
@@ -38,10 +31,9 @@ export default function TermsPage() {
             traffic in your jurisdiction. Nobody operates the software on your
             behalf, and there is no support obligation.
           </p>
-        </section>
+        </TextSection>
 
-        <section>
-          <h2 className="text-xl tracking-tight">No advice, no offer</h2>
+        <TextSection title="No advice, no offer">
           <p className="mt-4">
             Nothing on this site is financial, investment, tax, or legal advice.
             There is no token, no sale, no allocation, and no expectation of
@@ -49,10 +41,9 @@ export default function TermsPage() {
             Chain describe a public network we build toward and do not imply any
             affiliation or endorsement.
           </p>
-        </section>
+        </TextSection>
 
-        <section>
-          <h2 className="text-xl tracking-tight">The website</h2>
+        <TextSection title="The website">
           <p className="mt-4">
             The pages may be wrong or out of date, and they change without
             notice. Where a page and the code disagree, the code is correct.
@@ -66,17 +57,16 @@ export default function TermsPage() {
             </Link>
             .
           </p>
-        </section>
+        </TextSection>
 
-        <section>
-          <h2 className="text-xl tracking-tight">Liability</h2>
+        <TextSection title="Liability">
           <p className="mt-4">
             To the extent the law allows, the authors are not liable for any
             loss arising from use of the software or the site, including lost
             funds, deanonymisation, or damages of any kind.
           </p>
-        </section>
-      </div>
+        </TextSection>
+      </TextBody>
     </div>
   );
 }
