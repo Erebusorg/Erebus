@@ -151,6 +151,10 @@ cargo run --release -p erebus-fees -- new-note
 # the whole thing on a local chain: registry, pool, three nodes, a request,
 # a deposit from one account, a spend submitted by another, and the payouts
 ./scripts/paid-round.sh
+
+# and the same round against the contracts already deployed on Robinhood Chain
+# testnet — this is what the set on /network is
+FUNDER_KEY=0x… ./scripts/testnet-round.sh
 ```
 
 What this does **not** do: it pays nodes, not packets. Nothing proves a node
@@ -166,9 +170,9 @@ proof. The pool is safe to test with and unsafe to hold money.
 
 The registry, the verifier, and the fee pool are deployed and verified on
 Robinhood Chain testnet (chain 46630) — addresses are on the
-[network](/network) page, which reads the registry directly — but no operator has
-staked in, so the set is empty and routing still happens on a chain and a devnet
-you start yourself. Testnet only: the setup seed is public, so the pool must not
+[network](/network) page, which reads the registry directly — and three nodes are
+staked into it, paid from the pool, with loopback endpoints: one machine, not a
+fleet. Testnet only: the setup seed is public, so the pool must not
 hold real value. There is no trusted
 setup ceremony, the decision to slash is still a human one made off chain, and
 there is no key rotation and no node-originated cover traffic. No public fleet

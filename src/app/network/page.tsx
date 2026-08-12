@@ -75,13 +75,12 @@ export default async function NetworkPage() {
         <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-muted">
           The registry and the fee pool are deployed and verified on {chain.name}
           , and everything below the fold is one <code>snapshot()</code> call
-          against the registry rather than a number we typed in. Nobody runs a
-          public fleet yet, so until an operator stakes in the honest answer is an
-          empty set. Three nodes on one machine, from the{" "}
-          <Link href="/docs" className="text-accent">
-            docs
-          </Link>
-          , is what exists today.
+          against the registry rather than a number we typed in. What is in that
+          set today is a demo: three nodes on one machine, staked and paid for
+          real, with loopback endpoints nobody else can route to. Read the
+          endpoints in the table and you can see that for yourself — which is the
+          point of putting the set on chain. A public fleet is a separate thing,
+          and it does not exist yet.
         </p>
         <div className="mt-8 grid gap-px bg-line sm:grid-cols-3">
           {contracts.map((c) => (
@@ -192,7 +191,11 @@ export default async function NetworkPage() {
             <p className="mt-4 text-[13px] text-muted">
               Which layer a node lands in is not listed, and not the
               registry&apos;s to decide: every client derives it from the epoch
-              seed and the node&apos;s key.
+              seed and the node&apos;s key. Each bond was staked by its own
+              operator, and each of those operators has been paid out of the fee
+              pool by a spend whose payer the chain does not name —{" "}
+              <code>mixnet/scripts/testnet-round.sh</code> is the round that did
+              it.
             </p>
           </>
         )}
@@ -262,13 +265,14 @@ export default async function NetworkPage() {
 
       <section className="mt-16 border-t border-line pt-10">
         <h2 className="text-xl tracking-tight">
-          What has to exist before this page shows live nodes
+          What has to exist before this set is a network
         </h2>
         <ol className="mt-6 max-w-2xl list-decimal space-y-3 pl-5 text-[15px] leading-relaxed text-muted">
           <li>
-            Operators. The registry is deployed and holds each one&apos;s key,
-            endpoint, and bond, so the list is not ours to edit — but a set we
-            staked ourselves would not be a mixnet either.
+            Operators who are not us. The registry holds each one&apos;s key,
+            endpoint, and bond, so the list is not ours to edit — but three keys
+            we staked from one machine buy no anonymity, whatever the contract
+            says.
           </li>
           <li>
             A reason to run a node. The shielded fee pool now pays the operators
